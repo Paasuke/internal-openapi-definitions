@@ -1,0 +1,742 @@
+openapi: 3.0.0
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/aasaru/ph-document-store-internal-api/0.6.0
+
+info:
+  version: 0.6.0
+  title: ph-document-store-internal
+  description: |
+    Pääsuke public APIs:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/x-road-services-consumed-by-paasuke/">X-road services consumed by Pääsuke</a></li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/paasuke-x-road-services-to-query-mandates/">X-road services to query mandates that are stored in Pääsuke (Oraakliliides)</a></li>
+    </ul>
+    
+    Pääsuke UI APIs:
+    <ul>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-ui-api/">rolebinding-adapter-ui-api and document-adapter-ui-api</li>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-mutator-ui-api/">mutator-adapter-ui-api, mutator-adapter-internal-api</li>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-name-ui-api"/>name-adapter-ui-api</a></li>
+    </ul>
+    
+    Pääsuke internal APIs:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-adapter-internal-api"/>document-adapter-internal-api, document-helper-internal, name-adapter-internal</a></li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-namespace-store/">namespace-store (UI and internal APIs)</li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-store/">rolebinding-store</li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-store-internal-api/">document-store-internal-api</li>
+    </ul>
+    
+    Types:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/">Pääsuke common UI types</a></li>
+      <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-types/">Pääsuke common types used in internal and xRoad APIs</a></li>
+    </ul>
+        
+        
+
+  contact:
+    url: https://github.com/e-gov/PH/
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+
+paths:
+  /represented-parties/{representedPartyCode}/documents:
+    post:
+      operationId: createDocument
+      tags:
+        - document-store-internal
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the representedParty (who is currently being represented in eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols).</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                createdBy:
+                  type: string
+                  example: EE49109300123
+                state:
+                  type: string
+                  example: DRAFT
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentWithUuid'
+          # -----------------------------------------------------
+          # Links
+          # -----------------------------------------------------
+          links:
+            GetDocumentByUuid:
+              operationId: getDocumentByUuid
+              parameters:
+                userId: '$response.body#/documentUuid'
+              description: >
+                The `documentUuid` value returned in the response can be used as
+                the `documentUuid` parameter in `GET /mandate-operations-requests/{requestUuid}`.
+          # -----------------------------------------------------
+        '400':
+          description: Incorrect format of the payload
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.9#/components/schemas/Problem'
+
+  /represented-parties/{representedPartyCode}/documents/{documentUuid}:
+    get:
+      summary: Get document info by UUID.  
+      description: |
+        When mandates were added, deleted or sub-delegated then a signed asicE container might have been created. Pääsuke stores this document (signed container) on its side and this can be fetched using this service.
+      operationId: getDocumentByUuid
+      tags:
+        - document-store-internal
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Document (signed container) UUID
+
+      responses:
+        '200':
+          description: Document info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '403':
+          description: Forbidden. Request not authorized.
+        '404':
+          description: Document was not found.
+    put:
+      summary: Update doument state
+      description: |
+        Update document status
+      operationId: updateDocument
+      tags:
+        - document-store-internal
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Document (signed container) UUID
+      responses:
+        '200':
+          description: Report 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+        '403':
+          description: Forbidden. Request not authorized.
+        '404':
+          description: Document was not found.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: string
+                  example: PROCESSED
+          
+
+
+  /represented-parties/{representedPartyCode}/documents/{documentUuid}/mandate-operations-requests:
+    post:
+      summary: Store a request (that has just arrived from the user). 
+      operationId: createMandateOperationsRequest
+      tags:
+        - document-store-internal
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string 
+        - name: documentUuid
+          in: path
+          description: Document UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequestUuid'
+          # -----------------------------------------------------
+          # Links
+          # -----------------------------------------------------
+          links:
+            GetMandateOperationsRequest:
+              operationId: getMandateOperationsRequest
+              parameters:
+                userId: '$response.body#/requestUuid'
+              description: >
+                The `requestUuid` value returned in the response can be used as
+                the `requestUuid` parameter in `GET /mandate-operations-requests/{requestUuid}`.
+          # -----------------------------------------------------
+        '400':
+          description: Incorrect format of the payload
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.9#/components/schemas/Problem'
+      requestBody:
+        content:
+            application/json:
+              schema:
+                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequest'
+
+  /represented-parties/{representedPartyCode}/documents/{documentUuid}/mandate-operations-requests/{requstUuid}:
+    get:
+      summary: Get MandateOperationsRequest by requestUuid
+      description: |
+        MandateOperationsRequest object contains the needed info for generating a PDF
+      operationId: getMandateOperationsRequest
+      tags:
+        - document-store-internal
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: documentUuid
+          in: path
+          description: Document UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: requstUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: MandateOperationsRequest UUID
+      responses:
+        '200':
+          description: A user object.
+          content:
+            application/json:
+              schema:
+                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequest'
+
+  /represented-parties/{representedPartyCode}/documents/{documentUuid}/mandate-operations-requests/{requstUuid}/processing-report:
+    get:
+      summary: Get processing report of a MandateOperationsRequest.  
+      description: |
+        When document is processed (by sending out individual requests over x-road or internally in Pääsuke) then for each MandateOperation a result is stored. This method pulls out these results for a MandateOperationsRequest.
+      operationId: getMandateOperationsRequestReport
+      tags:
+        - document-store-internal
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Document (signed container) UUID
+        - name: requstUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: MandateOperationsRequest UUID
+      responses:
+        '200':
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.1#/components/responses/UiActionResults'
+        '202':
+          description: The document is still being processed. Please try in a short while.
+        '403':
+          description: Forbidden. Request not authorized.
+        '404':
+          description: The document or MandateOperationsRequest was not found.
+
+
+
+
+  /represented-parties/{representedPartyCode}/documents/{documentUuid}/mandate-operations-requests/{requestUuid}/mandate-operations/{actionOrUiUuid}/processing-result:
+    post:
+      summary: Store the information about how processing of a single mandateOperation went
+      operationId: storeMandateOperationProcessingResult
+      tags:
+        - document-store-internal
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string 
+        - name: documentUuid
+          in: path
+          description: Document UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: requestUuid
+          in: path
+          description: MandateOperationsRequest UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: actionOrUiUuid
+          in: path
+          description: actionUuid or uiUuid
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequestUuid'
+          # -----------------------------------------------------
+          # Links
+          # -----------------------------------------------------
+          links:
+            GetMandateOperationsRequest:
+              operationId: getMandateOperationsRequest
+              parameters:
+                userId: '$response.body#/requestUuid'
+              description: >
+                The `requestUuid` value returned in the response can be used as
+                the `requestUuid` parameter in `GET /mandate-operations-requests/{requestUuid}`.
+          # -----------------------------------------------------
+      requestBody:
+        content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MandateOperationProcessingResult'
+
+
+
+
+  /represented-parties/{representedPartyCode}/documents/{documentUuid}/confirmations:
+    post:
+      summary: Add a confirmation
+      operationId: addConfirmation
+      tags:
+        - document-store-internal
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: documentUuid
+          in: path
+          description: Document UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequestUuid'
+          # -----------------------------------------------------
+          # Links
+          # -----------------------------------------------------
+          links:
+            GetMandateOperationsRequest:
+              operationId: getMandateOperationsRequest
+              parameters:
+                userId: '$response.body#/requestUuid'
+              description: >
+                The `requestUuid` value returned in the response can be used as
+                the `requestUuid` parameter in `GET /mandate-operations-requests/{requestUuid}`.
+          # -----------------------------------------------------
+      requestBody:
+        content:
+            application/json:
+              schema:
+                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequest'
+              example: {}
+
+  /represented-parties/{representedPartyCode}/documents/{documentUuid}/signatures:
+    post:
+      summary: Add a signature
+      operationId: addSignature
+      tags:
+        - document-store-internal
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: documentUuid
+          in: path
+          description: Document UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequestUuid'
+          # -----------------------------------------------------
+          # Links
+          # -----------------------------------------------------
+          links:
+            GetMandateOperationsRequest:
+              operationId: getMandateOperationsRequest
+              parameters:
+                userId: '$response.body#/requestUuid'
+              description: >
+                The `requestUuid` value returned in the response can be used as
+                the `requestUuid` parameter in `GET /mandate-operations-requests/{requestUuid}`.
+          # -----------------------------------------------------
+      requestBody:
+        content:
+            application/json:
+              schema:
+                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequest'
+  /represented-parties/{representedPartyCode}/documents/{documentUuid}/pdfs:
+    post:
+      summary: Save pdfs
+      operationId: savePdfs
+      tags:
+        - document-store-internal
+      description: A request with a body containing a zip file which contains documents pdf-s
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string 
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Zip file containing pdfs
+        required: true
+        content:
+          application/zip:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Pdfs were saved successfully
+        '409':
+          description: Inconsistent state
+        '404':
+          description: Document was not found
+        '424':
+          description: Failed external dependency
+        '500':
+          description: Other
+    get:
+      summary: Gets pdfs associated with this document
+      operationId: getPdfs
+      tags:
+        - document-store-internal
+      description: |
+        Gets pdfs
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Pdfs in a zip file
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Document not found
+        '424':
+          description: Failed external dependency
+  /represented-parties/{representedPartyCode}/documents/{documentUuid}/hashcode-container:
+    get:
+      summary: Gets hashcontainer associated with this document
+      operationId: getHashcodeContainer
+      tags:
+        - document-store-internal
+      description: |
+        Gets hashcontainer
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: hashcontainer
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: not found
+        '409':
+          description: Inconsistent data
+        '424':
+          description: Failed external dependency
+    post:
+      summary: Save an empty hashcode container
+      description: Save an empty hashcode container. Should only be called once, when creating the SiGa empty container and persisting it. If the document specified already has an associated hashcode container, an exception should be thrown.
+      operationId: saveHashcodeContainerWithoutSignatures
+      tags:
+        - document-store-internal
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Binary zip file (SiGa hashcode container)
+        required: true
+        content:
+          application/zip:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: "Saved successfully"
+        '409':
+          description: A hash container already exists for this document. This api is intended to be used for only saving an empty hashcontainer.
+        '424':
+          description: Failed external dependency
+        '500':
+          description: Internal server error
+          
+  /represented-parties/{representedPartyCode}/documents/{documentUuid}/signers/{signer}:
+    post:
+      summary: Save a new signer together with asicE and hashcode container
+      operationId: saveAsiceSignerAndHashcodeContainer
+      tags:
+        - document-store-internal
+      description: |
+        Save hashcode container, asice, and user in a single transaction.
+        
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: signer
+          in: path
+          required: true
+          description: identifier of the person who just signed
+          schema:
+            type: string
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Hashcode container and asice
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/SaveAsiceHashcontainerAndSigner'
+      responses:
+        '200':
+          description: Saved successfully
+        '400':
+          description: The document is not associated with the supplied user
+        '404':
+          description: Container or document does not exist
+        '409':
+          description: Inconsistent state
+        '424':
+          description: Failed external dependency
+        '500':
+          description: Saving failed
+
+
+  /represented-parties/{representedPartyCode}/documents/{documentUuid}/signers:
+    get:
+      summary: Gets list of person identifiers who have signed the document
+      operationId: getAllSignedParties
+      tags:
+        - document-store-internal
+      description: |
+        Gets list of person identifiers who have signed the document
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Array of person identifiers who signed the documents
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  description: person identifier
+        '404':
+          description: not found
+
+
+components:
+  schemas:
+    
+    Document:
+      type: object
+      properties:
+        representee:
+          type: string
+          example: EE12345678
+        owner:
+          type: string
+          example: EE49109300123
+        state:
+          type: string
+          format: enum
+          enum: [SUCCESS, FAILURE, DRAFT, CONFIRMED, WAITING, READY, PROCESSING, PROCESSED]
+        documentUuid:
+          type: string
+          format: uuid
+        mandateOperationsRequests:
+          type: array
+          items:
+            $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequestUuid'
+            
+            
+    DocumentWithUuid:
+      type: object
+      properties:
+        documentUuid:
+          type: string
+          format: uuid
+          
+          
+    MandateOperationProcessingResult:
+      type: object
+      properties:
+        result:
+          type: string
+          enum: [COMPLETED, FAILED]
+        errors:
+          type: array
+          items:
+            $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
