@@ -1,7 +1,7 @@
 openapi: 3.0.0
 servers:
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/aasaru/x-road-services-provided-by-paasuke/0.5.0
+    url: https://virtserver.swaggerhub.com/aasaru/x-road-services-provided-by-paasuke/0.5.2
 
 info:
   version: 0.5.2
