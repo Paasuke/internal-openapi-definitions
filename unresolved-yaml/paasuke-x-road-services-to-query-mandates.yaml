@@ -1,0 +1,149 @@
+openapi: 3.0.0
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/aasaru/x-road-services-provided-by-paasuke/0.5.0
+
+info:
+  version: 0.5.2
+  title: X-road services to query mandates that are stored in Pääsuke (Oraakliliides).
+  description: |
+    Pääsuke public APIs:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/x-road-services-consumed-by-paasuke/">X-road services consumed by Pääsuke</a></li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/paasuke-x-road-services-to-query-mandates/">X-road services to query mandates that are stored in Pääsuke (Oraakliliides)</a></li>
+    </ul>
+  contact:
+    url: https://github.com/e-gov/PH/
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: Query currently valid mandates
+paths:
+  /delegates/{delegate}/representees:
+    get:
+      tags:
+        - Query currently valid mandates
+      summary: List representees that the delegate can represent. Mandates (roles) are not included.
+      operationId: getDelegateRepresentees
+      description: |
+        At least one of the parameters 'roleStartingWith' and 'roleIn' must be provided. If both are provided then the conditions are joined with OR so only one of these conditions has to match for representee to be returned.
+      parameters:
+        - name: delegate
+          in: path
+          description: Person identifier.
+          example: EE38302250123
+          required: true
+          schema:
+            type: string
+            example: EE39303130356
+        - name: ns
+          in: query
+          description: "Filter by namespaces (the first part of the role until colon). If only <b>ns</b> parameter is included in the query then the user must have at least one mandate with a role from one of the listed namespaces. Either <b>ns</b> parameter must be specified or <b>role</b>. If both <b>ns</b> and <b>role</b> are specified then all the returned results must match at least with one of the parameters."
+          example: "AGENCY-Q"
+          required: false
+          schema:
+            type: array
+            items:
+             type: string
+             example: 'AGENCY-Q'
+        - name: role
+          in: query
+          description: "Filter by role codes. If only <b>role</b> parameter is included in the query then the user must have at least one mandate with a role in this list. Either <b>role</b> parameter must be specified or <b>ns</b>. If both <b>ns</b> and <b>role</b> are specified then all the returned results must match at least with one of the parameters."
+          example: BR_REPRIGHT:SOLEREP
+          required: false
+          schema:
+            type: array
+            items:
+             type: string
+             example: 'BR_REPRIGHT:SOLEREP'
+        - name: representeeType
+          in: query
+          description: Filter by representee type 
+          required: false
+          schema:
+            type: string
+            enum: [LEGAL_PERSON, NATURAL_PERSON]
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/X-Road-Id'
+      responses:
+        '200':
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/responses/Persons'
+        '400':
+          description: Bad input parameter. For example if delegate parameter is not starting with two-letter contry-code. 
+        '403':
+          description: Forbidden. Request not authorized.
+        '422':
+          description: Bad input parameter. This is retured if 'ns' and 'role' are both not provided. 
+
+  /representees/{representee}/delegates/{delegate}/mandates:
+    get:
+      tags:
+        - Query currently valid mandates
+      summary: List active mandates of the delegate
+      operationId: getRepresenteeDelegateMandates
+      description: |
+        If both parameters are provided then these conditions are joined with OR so the mandate to be returned has to match to one of them. An empty list is returned in case there are no valid mandates matching to the query parameters or if the representee or delegate are unknown.
+      parameters:
+        - name: representee
+          in: path
+          description: Identifier of the of the representee.
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: delegate
+          in: path
+          description: Identifier of the delegate who'se mandate is being sub-delegated.
+          example: EE38302250123
+          required: true
+          schema:
+            type: string
+        - name: ns
+          in: query
+          description: "Filter by namespaces (the first part of the role until colon). If only <b>ns</b> parameter is included in the query then the user must have at least one mandate with a role from one of the listed namespaces. Either <b>ns</b> parameter must be specified or <b>role</b>. If both <b>ns</b> and <b>role</b> are specified then all the returned results must match at least with one of the parameters."
+          example: "AGENCY-Q"
+          required: false
+          schema:
+            type: array
+            items:
+             type: string
+             example: 'AGENCY-Q'
+        - name: role
+          in: query
+          description: "Filter by role codes. If only <b>role</b> parameter is included in the query then the user must have at least one mandate with a role in this list. Either <b>role</b> parameter must be specified or <b>ns</b>. If both <b>ns</b> and <b>role</b> are specified then all the returned results must match at least with one of the parameters."
+          example: BR_REPRIGHT:SOLEREP
+          required: false
+          schema:
+            type: array
+            items:
+             type: string
+             example: 'BR_REPRIGHT:SOLEREP'
+        - name: X-Road-User-Id
+          in: header
+          description: User identifier whose action initiated the request.
+          required: false
+          schema:
+            type: string
+          example: EE39912310123
+        - name: X-Road-Represented-Party
+          in: header
+          description: When service client represents third party while issuing a query then it must be filled with identifier of that third party. When service client represents itself then this header is omitted.
+          required: false
+          schema:
+            type: string
+          example: EE10391131
+        - name: X-Road-Id
+          in: header
+          description: Unique identifier (UUID) for this message.
+          example: 123e4567-e89b-12d3-a456-42661417400
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/responses/MandateTripletReadOnly'
+        '400':
+          description: Bad input parameter. For example if representee or delegate parameter is not starting with two-letter contry-code. 
+        '403':
+          description: Forbidden. Request not authorized.
+        '422':
+          description: Bad input parameter. This is retured if 'ns' and 'role' are both not provided.
