@@ -1,10 +1,10 @@
 openapi: 3.0.0
 servers:
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/aasaru/ph-document-store-internal-api/0.6.0
+    url: https://virtserver.swaggerhub.com/aasaru/ph-document-store-internal-api/0.6.1
 
 info:
-  version: 0.6.0
+  version: 0.6.1
   title: ph-document-store-internal
   description: |
     Pääsuke public APIs:
@@ -703,7 +703,7 @@ components:
     Document:
       type: object
       properties:
-        representee:
+        representedPartyCode:
           type: string
           example: EE12345678
         owner:
