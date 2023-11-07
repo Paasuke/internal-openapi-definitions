@@ -1,7 +1,7 @@
 openapi: 3.0.0
 servers:
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/aasaru/ph-document-store-internal-api/0.6.2
+    url: https://virtserver.swaggerhub.com/aasaru/ph-document-store-internal-api/0.6.3
 
 info:
   version: 0.6.3
@@ -296,7 +296,13 @@ paths:
           description: MandateOperationsRequest UUID
       responses:
         '200':
-          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.1#/components/responses/UiActionResults'
+          description: List of processing results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationProcessingResult'
         '202':
           description: The document is still being processed. Please try in a short while.
         '403':
@@ -365,9 +371,7 @@ paths:
         content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MandateOperationProcessingResult'
-
-
+                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationProcessingResult'
 
 
   /represented-parties/{representedPartyCode}/documents/{documentUuid}/confirmations:
@@ -727,15 +731,3 @@ components:
         documentUuid:
           type: string
           format: uuid
-          
-          
-    MandateOperationProcessingResult:
-      type: object
-      properties:
-        result:
-          type: string
-          enum: [COMPLETED, FAILED]
-        errors:
-          type: array
-          items:
-            $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
