@@ -1,10 +1,10 @@
 openapi: 3.0.0
 servers:
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/aasaru/ph-document-store-internal-api/0.6.0
+    url: https://virtserver.swaggerhub.com/aasaru/ph-document-store-internal-api/0.6.2
 
 info:
-  version: 0.6.0
+  version: 0.6.3
   title: ph-document-store-internal
   description: |
     Pääsuke public APIs:
@@ -16,7 +16,7 @@ info:
     Pääsuke UI APIs:
     <ul>
         <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-ui-api/">rolebinding-adapter-ui-api and document-adapter-ui-api</li>
-        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-mutator-ui-api/">mutator-adapter-ui-api, mutator-adapter-internal-api</li>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-mutator-ui-api/">mutator-adapter-ui-api</li>
         <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-name-ui-api"/>name-adapter-ui-api</a></li>
     </ul>
     
@@ -24,7 +24,7 @@ info:
     <ul>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-adapter-internal-api"/>document-adapter-internal-api, document-helper-internal, name-adapter-internal</a></li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-namespace-store/">namespace-store (UI and internal APIs)</li>
-      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-store/">rolebinding-store</li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-store/">rolebinding-store and mutator-adapter-internal</li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-store-internal-api/">document-store-internal-api</li>
     </ul>
     
@@ -33,8 +33,6 @@ info:
       <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/">Pääsuke common UI types</a></li>
       <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-types/">Pääsuke common types used in internal and xRoad APIs</a></li>
     </ul>
-        
-        
 
   contact:
     url: https://github.com/e-gov/PH/
@@ -68,6 +66,9 @@ paths:
                 state:
                   type: string
                   example: DRAFT
+                adminPartyCode:
+                  type: string
+                  example: EE70006317
       responses:
         '201':
           description: Created
@@ -94,7 +95,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.9#/components/schemas/Problem'
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
 
   /represented-parties/{representedPartyCode}/documents/{documentUuid}:
     get:
@@ -117,6 +118,7 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
           description: Document (signed container) UUID
 
       responses:
@@ -150,6 +152,7 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
           description: Document (signed container) UUID
       responses:
         '200':
@@ -166,12 +169,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                state:
-                  type: string
-                  example: PROCESSED
-          
+              $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/DocumentState'
 
 
   /represented-parties/{representedPartyCode}/documents/{documentUuid}/mandate-operations-requests:
@@ -221,7 +219,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.9#/components/schemas/Problem'
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
       requestBody:
         content:
             application/json:
@@ -287,6 +285,7 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
           description: Document (signed container) UUID
         - name: requstUuid
           in: path
@@ -703,7 +702,7 @@ components:
     Document:
       type: object
       properties:
-        representee:
+        representedPartyCode:
           type: string
           example: EE12345678
         owner:
