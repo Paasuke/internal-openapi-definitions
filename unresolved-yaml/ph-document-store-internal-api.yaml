@@ -16,14 +16,14 @@ info:
     Pääsuke UI APIs:
     <ul>
         <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-ui-api/">rolebinding-adapter-ui-api and document-adapter-ui-api</li>
-        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-mutator-ui-api/">mutator-adapter-ui-api</li>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-mutator-ui-api/">mutator-adapter-ui-api, namespace-store-ui-api</li>
         <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-name-ui-api"/>name-adapter-ui-api</a></li>
     </ul>
     
     Pääsuke internal APIs:
     <ul>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-adapter-internal-api"/>document-adapter-internal-api, document-helper-internal, name-adapter-internal</a></li>
-      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-namespace-store/">namespace-store (UI and internal APIs)</li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-namespace-store/">namespace-store-internal-api</li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-store/">rolebinding-store and mutator-adapter-internal</li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-store-internal-api/">document-store-internal-api</li>
     </ul>
