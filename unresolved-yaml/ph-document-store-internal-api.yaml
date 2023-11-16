@@ -95,7 +95,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.9#/components/schemas/Problem'
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
 
   /represented-parties/{representedPartyCode}/documents/{documentUuid}:
     get:
@@ -169,12 +169,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                state:
-                  type: string
-                  example: PROCESSED
-          
+              $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/DocumentState'
 
 
   /represented-parties/{representedPartyCode}/documents/{documentUuid}/mandate-operations-requests:
@@ -224,7 +219,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.9#/components/schemas/Problem'
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
       requestBody:
         content:
             application/json:
