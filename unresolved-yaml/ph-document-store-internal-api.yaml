@@ -16,14 +16,14 @@ info:
     Pääsuke UI APIs:
     <ul>
         <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-ui-api/">rolebinding-adapter-ui-api and document-adapter-ui-api</li>
-        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-mutator-ui-api/">mutator-adapter-ui-api, namespace-store-ui-api</li>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-mutator-ui-api/">mutator-adapter-ui-api</li>
         <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-name-ui-api"/>name-adapter-ui-api</a></li>
     </ul>
     
     Pääsuke internal APIs:
     <ul>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-adapter-internal-api"/>document-adapter-internal-api, document-helper-internal, name-adapter-internal</a></li>
-      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-namespace-store/">namespace-store-internal-api</li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-namespace-store/">namespace-store (UI and internal APIs)</li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-store/">rolebinding-store and mutator-adapter-internal</li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-store-internal-api/">document-store-internal-api</li>
     </ul>
@@ -296,13 +296,7 @@ paths:
           description: MandateOperationsRequest UUID
       responses:
         '200':
-          description: List of processing results
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationProcessingResult'
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.3#/components/responses/UiActionResults'
         '202':
           description: The document is still being processed. Please try in a short while.
         '403':
@@ -371,7 +365,9 @@ paths:
         content:
             application/json:
               schema:
-                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationProcessingResult'
+                $ref: '#/components/schemas/MandateOperationProcessingResult'
+
+
 
 
   /represented-parties/{representedPartyCode}/documents/{documentUuid}/confirmations:
@@ -731,3 +727,15 @@ components:
         documentUuid:
           type: string
           format: uuid
+          
+          
+    MandateOperationProcessingResult:
+      type: object
+      properties:
+        result:
+          type: string
+          enum: [COMPLETED, FAILED]
+        errors:
+          type: array
+          items:
+            $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
