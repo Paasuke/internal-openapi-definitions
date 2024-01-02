@@ -298,7 +298,6 @@ paths:
         '200':
           # This used to be: $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.3#/components/responses/UiActionResults'
           $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/responses/ProcessingResults'
-
         '202':
           description: The document is still being processed. Please try in a short while.
         '403':
