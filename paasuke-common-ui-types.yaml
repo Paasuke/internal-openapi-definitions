@@ -1,0 +1,410 @@
+# OpenAPI version identifier - required for OpenAPI 3.0 domains
+openapi: 3.0.0
+
+#######################
+# Optional info section
+#######################
+info:
+  title: Pääsuke common UI types
+  description: |
+    <p>Types used by UI APIS.</p>
+  
+    Pääsuke public APIs:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/x-road-services-consumed-by-paasuke/">X-road services consumed by Pääsuke</a></li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/paasuke-x-road-services-to-query-mandates/">X-road services to query mandates that are stored in Pääsuke (Oraakliliides)</a></li>
+    </ul>
+    
+    Pääsuke UI APIs:
+    <ul>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-ui-api/">rolebinding-adapter-ui-api and document-adapter-ui-api</li>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-mutator-ui-api/">mutator-adapter-ui-api, namespace-store-ui-api</li>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-name-ui-api"/>name-adapter-ui-api</a></li>
+    </ul>
+    
+    Pääsuke internal APIs:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-adapter-internal-api"/>document-adapter-internal-api, document-helper-internal, name-adapter-internal</a></li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-namespace-store/">namespace-store-internal-api</li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-store/">rolebinding-store and mutator-adapter-internal</li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-store-internal-api/">document-store-internal-api</li>
+    </ul>
+    
+    Types:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/">Pääsuke common UI types</a></li>
+      <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-types/">Pääsuke common types used in internal and xRoad APIs</a></li>
+    </ul>
+
+  version: '1.5'
+
+
+components:
+  ####################
+  # Common parameters
+  ####################
+  parameters:
+    OverrideRepresentedPartyCode:
+      name: overrideRepresentedPartyCode
+      in: header
+      required: false
+      description: Personal or registry code of the representee used by admins
+      schema:
+        type: string
+        example: EE10324057
+
+    SubDelegatedByRepresentedPary:
+      name: subDelegatedByRepresentedPary
+      in: query
+      description: return mandates where subdelegatedBy is representedParty
+      required: false
+      schema:
+        type: boolean
+
+  schemas:
+    FinalizeSignature:
+      type: object
+      properties:
+        sigaGeneratedSignatureId:
+          type: string
+        signedDataBase64:
+          type: string
+          
+    UiPerson:
+      type: object
+      required:
+        - type
+        - code
+      properties:
+        type:
+          type: string
+          enum: [NATURAL_PERSON, LEGAL_PERSON]
+        firstName:
+          type: string
+          format: string
+          example: Jüri
+        surname:
+          type: string
+          format: string
+          example: Juurikas
+        legalName:
+          type: string
+          format: string
+          example: Juurikas AS
+        identifier:
+          type: string
+          format: string
+          example: EE38302250123
+          maxLength: 258
+  
+    UiTranslation:
+      type: object
+      properties:
+        code: 
+          type: string
+          description: Translation code. If this is set then front-end tries to use this code to find translations and ingores et/en/ru 
+          example: error.123.this.role.cannot.be.added.to.legal.person
+        parameters:
+          type: array
+          items:
+            description: The values {0}, {1} etc inside the translation text are replaced with the parameters listed here.
+            type: string
+        et:
+          type: string
+          description: Translation in Estonian
+          example: Tere
+        en:
+          type: string
+          description: Translation in English
+          example: Hello
+        ru:
+          type: string
+          description: Translation in Russian
+          example: Привет
+  
+    # https://www.belgif.be/specification/rest/api-guide/#error-handling
+    UiProblem:
+      description: A Problem Details object (RFC 7807)
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          description: An absolute URI that identifies the problem type
+          default: about:blank  # kept for backwards-compatibility, type will be mandatory in problem-v2
+        href:
+          type: string
+          format: uri
+          description: An absolute URI that, when dereferenced, provides human-readable documentation for the problem type (e.g. using HTML).
+        title:
+          type: string
+          description: This is public message for debugging, not shown out in UI but can be seen in network tab of the browser
+          example: Service Unavailable
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status code generated by the origin server for this occurrence of the problem.
+          minimum: 400
+          maximum: 600
+          exclusiveMaximum: true
+          example: 503
+        detail:
+          $ref: '#/components/schemas/UiTranslation'
+        instance:
+          type: string
+          format: uri
+          description: An absolute URI reference that identifies the specific occurrence of the problem. It may or may not yield further information if dereferenced.
+      example: 
+        {
+          "type": "about:blank",
+          "href": "string",
+          "title": "Person not fund",
+          "status": 400,
+          "detail": {
+            "code": "error.123.person.not.found",
+            "parameters": [
+              "string"
+            ],
+            "et": "Tere",
+            "en": "Hello",
+            "ru": "Привет"
+          },
+          "instance": "string"
+        }
+        
+
+    UiSystemMandateTriplets:
+      type: object
+      required: 
+        - mandateTriplets
+      properties:
+        mandateTriplets:
+          type: array
+          items:
+            $ref: '#/components/schemas/UiMandatesGroup'
+        warning:
+          $ref: '#/components/schemas/UiWarning'
+        system:
+          type: string
+          description: What system (EMTA, STAT, internal) returned this data
+          example: internal
+          
+
+    UiWarning:
+      type: object
+      properties:
+        code:
+          type: string
+          example: 'NO_DATA_FROM_SYSTEM'
+        parameter:
+          type: string
+          example: STAT_ESTAT
+
+    UiSubDelegator:
+      type: object
+      properties:
+        identifier:
+          type: string
+          format: string
+          example: EE38302250123
+          maxLength: 258
+          description: Identifier of the person who created this mandate by adding a sub-delegate
+
+    UiValidityPeriod:
+      type: object
+      properties:
+        from:
+          type: string
+          format: date
+          example: '2017-07-21'
+          description: First day of being in effect. If null then is already valid or becomes valid immediately after being added.
+        through:
+          type: string
+          format: date
+          example: '2024-02-21'
+          description: Valid through (last day is inclusive). If no value is set (null) then valid indefinitely.
+
+    UiMandatesGroup:
+      type: object
+      required:
+        - representee
+        - delegate
+        - mandates
+      properties:
+        representee:
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.1#/components/schemas/UiPerson'
+        delegate:
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.1#/components/schemas/UiPerson'
+        mandates:
+          type: array
+          items:
+            $ref: '#/components/schemas/UiMandate'
+
+
+    UiActions:
+      type: object
+      properties:
+        update:
+          type: string
+          format: uuid
+          description: RESERVED FOR FUTURE.
+        delete:
+          type: string
+          format: uuid
+        addSubDelegate:
+          type: string
+          format: uuid
+
+    UiActionResult:
+      type: object
+      properties:
+        actionUuid:
+          type: string
+          format: uuid
+          description: actionUuid sent
+        uiUuid:
+          type: string
+          format: uuid
+          description: in case it was an add
+        mandateOperationResultUuid:
+          type: string
+          format: uuid
+          description: result identifier 
+        status:
+          type: string
+          enum: [SUCCESS, FAILURE]
+        failureMessages:
+          type: array
+          items:
+            $ref: '#/components/schemas/UiTranslation'
+
+    UiMandate:
+      type: object
+      required:
+        - role
+      properties:
+        namespace:
+          type: string
+          format: string
+          example: STAT_ESTAT
+        role:
+          type: string
+          format: string
+          example: 'STAT_ESTAT:CEO'
+        validityPeriod:
+          $ref: '#/components/schemas/UiValidityPeriod'
+        actions:
+          $ref: '#/components/schemas/UiActions'
+        subDelegator:
+          $ref: '#/components/schemas/UiSubDelegator'
+          
+          
+    UiMandateOperation:
+      type: object
+      required:
+        - action
+      properties:
+        action:
+          type: string
+          enum: [ADD, DELETE, ADD_SUB_DELEGATE]
+        actionUuid:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+          description: This is the value that refers to the original 'link' (used by  DELETE and ADD_SUB_DELEGATE requests)
+        uiUuid:
+          type: string
+          format: uuid
+          example: 2290f1ee-6c54-4b01-90e6-d701748f0851
+          description: Random id generated by UID. This allows the back-end to distinguish different ADD operations.
+        role:
+          type: string
+          example: EMTA:HAMPI
+          pattern: '^\S+\:\S+$'
+          maxLength: 4000
+        canSubDelegate:
+          type: boolean
+          example: true
+        validityPeriod:
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.1#/components/schemas/UiValidityPeriod'
+          
+          
+  ##############################
+  # Common responses for UI APIs
+  ##############################
+  responses:
+    SigningStarted:
+      description: The signing process was started
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              challengeId:
+                description: 4-character control code. This code is displayed on mobile phone's screen and must be also displayed by integrating web service in order to ensure the user on authencity of the query.
+                type: string
+                example: "0123"
+              sigaGeneratedSignatureId:
+                type: string
+              sigaContainerId:
+                type: string
+    
+    
+    SigningResult:
+      description: Whether the signing failed or succeeded. After a signature has been added the system might start processing mandate operations. This happens when the needed amount of people have signed the document. The system signals back (via field "processingStarted") to the UI if the processing was started or not.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                description: |
+                 Status of the signing.
+                 <ul>
+                   <li>SIGNATURE – signature was successfully created</li>
+                   <li>NO_VALID_CERTIFICATE - user is not a mobile-id/smart-id user or the id-card certificate has expired</li>
+                   <li>FAILED (some internal error happened like MID_NOT_READY, INTERNAL_ERROR, NOT_VALID, SENDING_ERROR, DOCUMENT_UNUSABLE, OCSP_CHECK_FAILED, SIM_ERROR)</li>
+                   <li>PHONE_ABSENT - cannot connect with the device</li>
+                   <li>EXPIRED_TRANSACTION - user didn't enter PIN2 </li>
+                   <li>USER_CANCEL - user cancelled</li>
+                   <li>USER_SELECTED_WRONG_VC - in Smart-ID user selected wrong control code</li></ul>
+                enum: [SIGNATURE, NO_VALID_CERTIFICATE, FAILED, PHONE_ABSENT, EXPIRED_TRANSACTION, USER_CANCEL, USER_SELECTED_WRONG_VC]
+              processingStarted:
+                type: boolean
+    
+    UiActionResults:
+      description: How did processing go.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/UiActionResult'
+            example: [
+              {
+                "uiUuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "mandateOperationResultUuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "status": "SUCCESS",
+                "failureMessages": [
+                  {
+                    "code": "error.123.this.role.cannot.be.added.to.legal.person",
+                    "parameters": [
+                      "kala", "mati"
+                    ]
+                  }
+                ]
+              },
+              {
+                "actionUuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "mandateOperationResultUuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "status": "SUCCESS",
+                "failureMessages": [
+                  {
+                    "et": "Sellest volitusest ei ole võimalik loobuda, kuna XYZ",
+                    "en": "Hello",
+                    "ru": "Привет"
+                  }
+                ]
+              },
+            ]
