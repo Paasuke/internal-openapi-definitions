@@ -926,7 +926,7 @@ components:
         <ul>
           <li><b>role</b></li>
           <li><b>validityPeriod</b> - if this value is present it must have either validFrom, validThrough or both. If the valid through date is in the past the mandate must not be returned at all. The value of validThrough must be to the last date the mandate is valid (like 31.12.2029). If the mandate is valid indefinitely then validThrough must be omitted.</li>
-          <li><b>canSubDelegate</b> - if mandate can be further sub-delegated or not.</li>
+          <li><b>subDelegable</b> - true if this mandate was created with the right to futher sub-delegate it, false otherwise.</li>
           <li><b>subDelegatorIdentifier</b> - precence of this value indicates that this mandate has been created by adding a sub-delegate to some other mandate. The value of this property indicates who was the delegate of the original mandate.</li>
           </ul>
       content:
@@ -955,6 +955,7 @@ components:
                   "from": "2017-07-21",
                   "through": "2028-12-31"
                 },
+                "subDelegable": false
                 "subDelegatorIdentifier": "EE12345678",
                 "links": {
                   "delete": "/v1/nss/EMTA/representees/int-EE12345678/delegates/int-EE38302250123/mandates/int-mandate-123",
