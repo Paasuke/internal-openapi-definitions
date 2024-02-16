@@ -330,6 +330,9 @@ components:
           $ref: '#/components/schemas/ValidityPeriod'
         links:
           $ref: '#/components/schemas/MandateLinks'
+        subDelegable:
+          type: boolean
+          description: True if this mandate was created with the right to futher sub-delegate it.
         subDelegatorIdentifier:
           type: string
           example: EE12345678
