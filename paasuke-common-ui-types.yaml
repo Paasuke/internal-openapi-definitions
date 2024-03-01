@@ -256,10 +256,6 @@ components:
     UiActions:
       type: object
       properties:
-        update:
-          type: string
-          format: uuid
-          description: RESERVED FOR FUTURE.
         delete:
           type: string
           format: uuid
