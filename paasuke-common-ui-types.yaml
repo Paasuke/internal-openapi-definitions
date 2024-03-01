@@ -79,6 +79,15 @@ components:
         enum: [REPRESENTED_PARTY, OVERRIDDEN, HIDDEN]
         default: REPRESENTED_PARTY
 
+    HiddenParameter:
+      name: hidden
+      in: header
+      description: Required if 'representee' has value 'HIDDEN'
+      required: false
+      schema:
+        type: string
+        example: EE12345688
+
   schemas:
     FinalizeSignature:
       type: object
