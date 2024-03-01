@@ -66,7 +66,7 @@ components:
       schema:
         type: boolean
 
-    PersonKeyConstant:
+    PersonKeyPathParameter:
       name: personKey
       in: path
       required: true
@@ -79,7 +79,7 @@ components:
         enum: [REPRESENTED_PARTY, OVERRIDDEN, HIDDEN]
         default: REPRESENTED_PARTY
 
-    HiddenParameter:
+    HiddenHeaderParameter:
       name: hidden
       in: header
       description: Required if 'representee' has value 'HIDDEN'
