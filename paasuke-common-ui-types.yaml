@@ -66,6 +66,19 @@ components:
       schema:
         type: boolean
 
+    PersonKeyConstant:
+      name: personKey
+      in: path
+      required: true
+      description: |
+        <ul><li>if value is 'REPRESENTED_PARTY' then the actual value is taken from JWT</li>
+        <li>if value is 'OVERRIDDEN' then the actual value is taken from header parameter named 'overrideRepresentedPartyCode'</li>
+        <li>if value is 'HIDDEN' then thea actual value is taken from header paramter named 'hidden'</li></ul>
+      schema:
+        type: string
+        enum: [REPRESENTED_PARTY, OVERRIDDEN, HIDDEN]
+        default: REPRESENTED_PARTY
+
   schemas:
     FinalizeSignature:
       type: object
