@@ -297,6 +297,9 @@ components:
           $ref: '#/components/schemas/UiActions'
         subDelegator:
           $ref: '#/components/schemas/UiSubDelegator'
+        subDelegable:
+          type: boolean
+          description: Was this mandate created with the right to sub-delegate it.
           
           
     UiMandateOperation:
