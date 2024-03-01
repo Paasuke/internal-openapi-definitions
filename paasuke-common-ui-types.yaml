@@ -82,7 +82,7 @@ components:
     HiddenHeaderParameter:
       name: hidden
       in: header
-      description: Required if 'representee' has value 'HIDDEN'
+      description: Required if 'personKey' has value 'HIDDEN'
       required: false
       schema:
         type: string
@@ -92,7 +92,7 @@ components:
       name: subDelegatedBy
       in: query
       required: false
-      description: Required if 'representee' has value 'HIDDEN'
+      description: Required if 'personKey' has value 'HIDDEN'
       schema:
         type: string
         enum: [REPRESENTED_PARTY, OVERRIDDEN]
