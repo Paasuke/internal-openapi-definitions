@@ -35,6 +35,11 @@ info:
       <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/">Pääsuke common UI types</a></li>
       <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-types/">Pääsuke common types used in internal and xRoad APIs</a></li>
     </ul>
+    
+    Changelog:
+    <ul>
+      <li>1.03.2024 - added mandate.subDelegable</li>
+      </ul>
 
   version: '1.5'
 
