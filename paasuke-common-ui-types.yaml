@@ -214,6 +214,13 @@ components:
           example: EE38302250123
           maxLength: 258
           description: Identifier of the person who created this mandate by adding a sub-delegate
+        name:
+          type: string
+          format: string
+          example: "AS Raamatupidajad"
+        type:
+          type: string
+          enum: [LEGAL_PERSON, NATURAL_PERSON]
 
     UiValidityPeriod:
       type: object
