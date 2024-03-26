@@ -38,7 +38,7 @@ info:
     <h2>Changelog</h2>
     <h3>0.7.0 - PH-1269</h3>
     <ul>
-      <li>createMandateOperationsRequest MandateOperation element has a new field initiatorHasRole</li>
+      <li>MandateOperation element (read in by createMandateOperationsRequest and returned by query getMandateOperationsRequest) has a new field initiatorHasRole</li>
     </ul>
 
   contact:
