@@ -45,7 +45,7 @@ tags:
 
 paths:
 
-  /business-registry/{representedPartyCode}/can-represent-as-group:
+  /business-registry/{representedPartyCode}/has-representation-right:
     get:
       tags:
         - sync-adapter
