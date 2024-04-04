@@ -45,16 +45,16 @@ tags:
 
 paths:
 
-  /business-registry/{representedPartyCode}/has-representation-right:
+  /legal-entities/{representedPartyCode}/representation-rights:
     get:
       tags:
         - sync-adapter
       operationId: canIndividualsRepresentLegalEntity
-      summary: Among the individuals sent as query parameter, does there exist a group of persons who collectively have the right to represent the representedParty.
+      summary: Among the individuals sent as query parameter, does there exist a group of persons who collectively have the right to represent the representedParty. Makes a query to the business registry.
       parameters:
         - name: representedPartyCode
           in: path
-          description: Identifier of the represented party. Must be 'EE' followed by 8-digit legal entity code from Estonian Business Registry
+          description: Identifier of the legal entity. Must be 'EE' followed by 8-digit legal entity code from Estonian Business Registry
           example: EE10391131
           required: true
           schema:
@@ -71,26 +71,25 @@ paths:
              example: 'EE46909060217'
       responses:
         '200':
-          description: Response received
+          description: Response stating if the individuals (or some of them) collectively have the full representation rights or not.
           content:
             application/json:
               schema:
                 required: 
-                  - canRepresentLegalEntity
+                  - fullRepresentationRights
                 example:
-                  canRepresentLegalEntity: true
+                  fullRepresentationRights: true
                   representationGroup:
                   - EE46909060217
                   - EE46909060222
                   - EE46909060333
                 properties:
-                  canRepresentLegalEntity:
-                    description: True if this group (of some sub-group) of members passed in can represent the represented person together
+                  fullRepresentationRights:
+                    description: True if group of individuals passed as query parameter can collectively represent the representedPary, False otherwise
                     type: boolean
-                    
                   representationGroup:
                     type: array
-                    description: List of persons who together form representation group. Only set if groupCanRepresent is set to true. This list can only contain list of persons passed in as argument.
+                    description: List of individuals who together form representation group with full representation rights. Only set if fullRepresentationRights is true. This list can only contain individuals passed in as argument.
                     items: 
                       type: string
                       example: EE46909060217
