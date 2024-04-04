@@ -50,7 +50,7 @@ paths:
       tags:
         - sync-adapter
       operationId: canIndividualsRepresentLegalEntity
-      summary: Among the members sent as parameter, does there exist a group of persons who collectively have the right to represent the representedParty.
+      summary: Among the individuals sent as query parameter, does there exist a group of persons who collectively have the right to represent the representedParty.
       parameters:
         - name: representedPartyCode
           in: path
