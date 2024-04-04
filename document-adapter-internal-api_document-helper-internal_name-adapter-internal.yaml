@@ -90,7 +90,7 @@ paths:
                     
                   representationGroup:
                     type: array
-                    description: List of persons who together form representation group. Only set if groupCanRepresent is set to true
+                    description: List of persons who together form representation group. Only set if groupCanRepresent is set to true. This list can only 
                     items: 
                       type: string
                       example: EE46909060217
