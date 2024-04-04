@@ -343,7 +343,10 @@ components:
           $ref: '#/components/schemas/UiPerson'
         delegate:
           $ref: '#/components/schemas/UiPerson'
-        # previously this property was named actions and the type was named UiUuidActions
+        operationsSummary:
+          type: string
+          description: What kind of operations does this MandateOperationsRequest contain. Is there only one operation or many? Are there combination of different operations (like ADD and WITHDRAW)? See PH-827 for more details.
+          enum: [ADD_ONE, ADD_MANY, WITHDRAW_ONE, WITHDRAW_MANY, ADD_AND_WITHDRAW, WAIVE_ONE, WAIVE_MANY, ADD_SUB_DELEGATE_ONE, ADD_SUB_DELEGATE_MANY, WITHDRAW_SUB_DELEGATE_ONE, WITHDRAW_SUB_DELEGATE_MANY]
         operations:
           type: array
           items:
@@ -354,11 +357,7 @@ components:
         created:
           type: string
           format: date-time
-          description: Created time. This is created by document-store-internal-api when the request is actually stored.
-        canSkipSigning:
-          type: boolean
-          description: If this is true then signing is not required.
-
+          description: Created time.
 
 
     UiMandate:
