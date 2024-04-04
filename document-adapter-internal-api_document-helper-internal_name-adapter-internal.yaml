@@ -49,7 +49,7 @@ paths:
     get:
       tags:
         - sync-adapter
-      operationId: canGroupOfIndividualsRepresentLegalEntity
+      operationId: canIndividualsRepresentLegalEntity
       summary: Among the members sent as parameter, does there exist a group of persons who collectively have the right to represent the representedParty.
       parameters:
         - name: representedPartyCode
