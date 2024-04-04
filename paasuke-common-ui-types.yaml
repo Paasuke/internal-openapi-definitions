@@ -38,7 +38,8 @@ info:
     
     Changelog:
     <ul>
-      <li>1.03.2024 - added mandate.subDelegable</li>
+      <li>2024-04-04 - added Document</li>
+      <li>2024-03-01 - added mandate.subDelegable</li>
       </ul>
 
   version: '1.5'
@@ -309,6 +310,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UiTranslation'
+
+    UiDocument:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: UUID
 
     UiMandate:
       type: object
