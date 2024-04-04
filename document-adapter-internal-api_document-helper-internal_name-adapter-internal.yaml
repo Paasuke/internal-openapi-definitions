@@ -77,6 +77,12 @@ paths:
               schema:
                 required: 
                   - groupCanRepresent
+                example:
+                  groupCanRepresent: true
+                  representationGroup:
+                  - EE46909060217
+                  - EE46909060222
+                  - EE46909060333
                 properties:
                   groupCanRepresent:
                     description: True if this group (of some sub-group) of members passed in can represent the represented person together
