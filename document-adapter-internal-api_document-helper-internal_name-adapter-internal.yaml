@@ -1,0 +1,366 @@
+openapi: 3.0.0
+info:
+  version: 1.26.0
+  title: document-adapter-internal-api, document-helper-internal, name-adapter-internal
+  description: |
+    Pääsuke public APIs:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/x-road-services-consumed-by-paasuke/">X-road services consumed by Pääsuke</a></li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/paasuke-x-road-services-to-query-mandates/">X-road services to query mandates that are stored in Pääsuke (Oraakliliides)</a></li>
+    </ul>
+    
+    Pääsuke UI APIs:
+    <ul>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-ui-api/">rolebinding-adapter-ui-api and document-adapter-ui-api</li>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-mutator-ui-api/">mutator-adapter-ui-api, namespace-store-ui-api</li>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-name-ui-api"/>name-adapter-ui-api</a></li>
+    </ul>
+    
+    Pääsuke internal APIs:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-adapter-internal-api"/>document-adapter-internal-api, document-helper-internal, name-adapter-internal</a></li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-namespace-store/">namespace-store-internal-api</li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-store/">rolebinding-store and mutator-adapter-internal</li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-store-internal-api/">document-store-internal-api</li>
+    </ul>
+    
+    Types:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/">Pääsuke common UI types</a></li>
+      <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-types/">Pääsuke common types used in internal and xRoad APIs</a></li>
+    </ul>
+
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/aasaru/ph-document-adapter-internal-api/1.26.0
+
+tags:
+  - name: name-adapter-internal
+  - name: document-adapter-internal
+  - name: document-helper-internal
+  - name: sync-adapter
+
+paths:
+
+  /business-registry/{representedPartyCode}/can-represent-as-group:
+    get:
+      tags:
+        - sync-adapter
+      operationId: hasGrouprep
+      summary: Is there a (sub-)group among the members who have the right to represent together
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p></p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: member
+          in: query
+          description: "List of persons to check"
+          example: "EE46909060217"
+          required: true
+          schema:
+            type: array
+            items:
+             type: string
+             example: 'EE46909060217'
+      responses:
+        '200':
+          description: Response received
+          content:
+            application/json:
+              schema:
+                properties:
+                  groupCanRepresent:
+                    description: True if this group (of some sub-group) of members passed in can represent the represented person together
+                    type: boolean
+                    required: : true
+                  representationGroup:
+                    type: array
+                    description: List of persons who together form representation group. Only set if groupCanRepresent is set to true
+                    items: 
+                      type: string
+                      example: EE46909060217
+        '500':
+          description: Internal error.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.1#/components/schemas/UiProblem'
+
+
+  /person/legal-capacity:
+    get:
+      tags:
+        - name-adapter-internal
+      operationId: hasLegalCapacity
+      summary: Check from population registry if the person (personalCode taken from JWT) posesses active legal capacity. (Kontrolli Rahvastikuregistrist, et portaali sisse loginud isiku teovõimet ei ole piiratud). 
+      responses:
+        '200':
+          description: Created
+          content:
+            application/json:
+              schema:
+                properties:
+                  hasFullActiveLegalCapacity:
+                    description: True if the person has full active legal capacity (teovõime ei ole piiratud), false otherwise (isiku teovõime on mingil määral piiratud).
+                    type: boolean
+        '500':
+          description: Internal error.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.1#/components/schemas/UiProblem'
+
+  /represented-parties/{representedPartyCode}/documents/{documentUuid}:
+    put:
+      tags:
+        - document-adapter-internal
+      summary: This is called when the last MandateOperationRequest has been processed by mutator-adapter. Document-adapter now updates document state in database and sends out notifications if needed. 
+      description: |
+        representedParty is the person who was being represented.
+        For operations with aciton is ADD, ADD_SUB_DELEGATE or DELETE_WITHDRAW then representedParty = representee in JSON body
+        For operations with action=DELETE_WAIVE then representedParty=delegate in JSON body
+      operationId: completeProcessing
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: documentUuid
+          in: path
+          description: Document UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: State updated
+        '500':
+          description: Failed to update. See logs for details.
+      requestBody:
+        content:
+            application/json:
+              schema:
+                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/DocumentState'
+
+
+  /represented-parties/{representedPartyCode}/documents/{documentUuid}/mandate-operations-requests:
+    post:
+      tags:
+        - document-adapter-internal
+      summary: Store a request (that has just arrived from the user). 
+      description: |
+        representedParty is the person who was being represented.
+        For operations with aciton is ADD, ADD_SUB_DELEGATE or DELETE_WITHDRAW then representedParty = representee in JSON body
+        For operations with action=DELETE_WAIVE then representedParty=delegate in JSON body
+      operationId: acceptMandateOperationsRequest
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: documentUuid
+          in: path
+          description: Document UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/AcceptMandateOperationsResult'
+          # -----------------------------------------------------
+          # Links
+          # -----------------------------------------------------
+          links:
+            GetMandateOperationsRequest:
+              operationId: getMandateOperationsRequest
+              parameters:
+                userId: '$response.body#/requestUuid'
+              description: >
+                The `requestUuid` value returned in the response can be used as
+                the `requestUuid` parameter in `GET /mandate-operations-requests/{requestUuid}`.
+          # -----------------------------------------------------
+      requestBody:
+        content:
+            application/json:
+              schema:
+                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequest'
+
+
+  /documents/{documentUuid}/asice:
+    post:
+      summary: Create an asice file from hashcode container and pdfs
+      operationId: createAsice
+      tags: 
+        - document-helper-internal
+      parameters:
+        - name: documentUuid
+          in: path
+          description: Document UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      description: |
+        Create an asice file from hashcode container and pdfs
+      requestBody:
+        description: Hashcode container and pdfs
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                hashcodeContainerBase64:
+                  description: Base64 encoded hashcode container
+                  type: string
+                pdfsZipBase64:
+                  description: Base64 encoded Zip file containing only PDF files
+                  type: string
+      responses:
+        '200':
+          description: Get asice binary file
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+
+  /documents/{documentUuid}/pdfs:
+    post:
+      summary: Create a pdf file for mandate operations
+      operationId: createPdfs
+      tags: 
+        - document-helper-internal
+      description: |
+        Create a pdf file that has information who initiated the mandate operations and operations themselves
+      parameters:
+        - name: documentUuid
+          in: path
+          description: Document UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Mandate operations
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                 $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequest'
+      responses:
+        '200':
+          description: A zip file containing the created pdfs
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '500':
+          description: Failed to create pdfs
+          
+  /documents/{documentUuid}/notifications:
+    post:
+      summary: Create a list of e-mail notifications to be sent out
+      operationId: createNotifications
+      tags: 
+        - document-helper-internal
+      description: |
+        Create a list of email notifications to be sent out
+      parameters:
+        - name: documentUuid
+          in: path
+          description: Document UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: MandateOperationsRequest(s) and related MandateOperationsResult(s)
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: 
+              - mandateOperationsRequests
+              - mandateOperationsResults
+              properties:
+                mandateOperationsRequests:
+                  type: array
+                  items:
+                    $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequest'
+                mandateOperationsResults:
+                  type: array
+                  items:
+                    $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationProcessingResult'
+                
+                  
+      responses:
+        '200':
+          description: List of notifications to send out. If the list is empty then no notifications ar to be sent out.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+            
+        '500':
+          description: Failed to create notifications
+          
+          
+components:
+  schemas:
+    Notification:
+      type: object
+      properties:
+        fromName:
+          type: string
+          example: Riigiportaal
+          description: Textual part of the sender
+        fromEmail:
+          type: string
+          format: email
+          example: volitused@eesti.ee
+          description: actual e-mail address to display as the sender (and reply-to address)
+        toName:
+          type: string
+          example: Mari Maasikas
+          description: Textual part of the recipient
+        toEmail:
+          type: string
+          format: email
+          example: 39303030123@eeti.ee
+          description: actual e-mail address to send out the email to
+        subject:
+          type: string
+          example: "Teile lisati volitusi / Teile lisati volitusi (ENG) / Teile lisati volitusi (RUS)"
+        body:
+          type: string
+          example: "<b>You got mail</b><br/><br/>Come-come read."
