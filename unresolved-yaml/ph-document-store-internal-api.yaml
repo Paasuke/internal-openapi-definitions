@@ -1,7 +1,7 @@
 openapi: 3.0.0
 servers:
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/aasaru/ph-document-store-internal-api/0.7.0
+    url: https://virtserver.swaggerhub.com/aasaru/ph-document-store-internal-api/0.8.0
 
 info:
   version: 0.8.0
@@ -36,6 +36,11 @@ info:
     
         
     <h2>Changelog</h2>
+    <h3>0.8.0 - PH-827 - 2024-04-04</h3>
+    <ul>
+      <li>added getDocuments</li>
+    </ul>
+    
     <h3>0.7.0 - PH-1269</h3>
     <ul>
       <li>MandateOperation element (read in by createMandateOperationsRequest and returned by query getMandateOperationsRequest) has a new field initiatorHasRole</li>
@@ -49,6 +54,49 @@ info:
 
 paths:
   /represented-parties/{representedPartyCode}/documents:
+    get:
+      tags:
+        - document-store-internal
+      summary: Get documents in state
+      operationId: getDocuments
+      description: |
+      parameters:
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the representedParty (who is currently being represented in eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols).</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: array
+            items:
+              $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/DocumentStateEnum'
+      responses:
+        '200':
+          description: Documents that can be displayed to the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Document'
+        '400':
+          description: bad input parameter
+        '401':
+          description: Unauthorized. Person JWT not included.
+        '403':
+          description: Forbidden. The user is not allowed to view documents.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/schemas/UiProblem'
     post:
       operationId: createDocument
       tags:
@@ -725,7 +773,7 @@ components:
           type: array
           items:
             $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequestUuid'
-            
+    
             
     DocumentWithUuid:
       type: object
