@@ -38,7 +38,7 @@ info:
     
     Changelog:
     <ul>
-      <li>2024-04-04 - added Document</li>
+      <li>2024-04-04 - added UiDocument</li>
       <li>2024-03-01 - added mandate.subDelegable</li>
       </ul>
 
@@ -314,9 +314,52 @@ components:
     UiDocument:
       type: object
       properties:
-        uuid:
+        documentUuid:
           type: string
-          format: UUID
+          format: uuid
+        state:
+          type: string
+          format: enum
+          enum: [SUCCESS, FAILURE, DRAFT, CONFIRMED, WAITING, READY, PROCESSING, PROCESSED]
+        mandateOperationsRequests:
+          type: array
+          items:
+            $ref: '#/components/schemas/UiMandateOperationsRequest'
+
+    UiMandateOperationsRequest:
+      type: object
+      required: 
+        - representee
+        - delegate
+      properties:
+        requestUuid:
+          type: string
+          format: uuid
+        representee:
+          $ref: '#/components/schemas/UiPerson'
+        originalDelegate:
+          # This is the person adding a sub-delegate
+          # This is present only if operation is adding a sub-delegate
+          $ref: '#/components/schemas/UiPerson'
+        delegate:
+          $ref: '#/components/schemas/UiPerson'
+        # previously this property was named actions and the type was named UiUuidActions
+        operations:
+          type: array
+          items:
+            $ref: '#/components/schemas/UiMandateOperation'
+        createdBy:
+          # natural person who created the request
+          $ref: '#/components/schemas/UiPerson'
+        created:
+          type: string
+          format: date-time
+          description: Created time. This is created by document-store-internal-api when the request is actually stored.
+        canSkipSigning:
+          type: boolean
+          description: If this is true then signing is not required.
+
+
 
     UiMandate:
       type: object
