@@ -75,11 +75,13 @@ paths:
           content:
             application/json:
               schema:
+                required: 
+                  - groupCanRepresent
                 properties:
                   groupCanRepresent:
                     description: True if this group (of some sub-group) of members passed in can represent the represented person together
                     type: boolean
-                    required: : true
+                    
                   representationGroup:
                     type: array
                     description: List of persons who together form representation group. Only set if groupCanRepresent is set to true
