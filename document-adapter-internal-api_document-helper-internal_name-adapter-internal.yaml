@@ -49,17 +49,17 @@ paths:
     get:
       tags:
         - sync-adapter
-      operationId: hasGrouprep
-      summary: Is there a (sub-)group among the members who have the right to represent together
+      operationId: canGroupOfIndividualsRepresentLegalEntity
+      summary: Among the members sent as parameter, does there exist a group of persons who collectively have the right to represent the representedParty.
       parameters:
         - name: representedPartyCode
           in: path
-          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p></p>
+          description: Identifier of the represented party. Must be 'EE' followed by 8-digit legal entity code from Estonian Business Registry
           example: EE10391131
           required: true
           schema:
             type: string
-        - name: member
+        - name: individual
           in: query
           description: "List of persons to check"
           example: "EE46909060217"
@@ -90,7 +90,7 @@ paths:
                     
                   representationGroup:
                     type: array
-                    description: List of persons who together form representation group. Only set if groupCanRepresent is set to true. This list can only 
+                    description: List of persons who together form representation group. Only set if groupCanRepresent is set to true. This list can only contain list of persons passed in as argument.
                     items: 
                       type: string
                       example: EE46909060217
