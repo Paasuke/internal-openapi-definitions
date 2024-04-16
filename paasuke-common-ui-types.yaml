@@ -5,7 +5,7 @@ openapi: 3.0.0
 # Optional info section
 #######################
 info:
-  title: Pääsuke common UI typesF
+  title: Pääsuke common UI types
   description: |
     <p>Types used by UI APIS.</p>
   
