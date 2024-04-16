@@ -345,7 +345,7 @@ components:
           $ref: '#/components/schemas/UiPerson'
         operationsSummary:
           type: string
-          description: What kind of operations does this MandateOperationsRequest contain. Is there only one operation or many? Are there combination of different operations (like ADD and WITHDRAW)? See PH-827 for more details.
+          description: What kind of operations does this MandateOperationsRequest contain? Is there only one operation or many? Is there combination of different operations (like ADD and WITHDRAW at the same time)? See PH-827 for more details.
           enum: [ADD_ONE, ADD_MANY, WITHDRAW_ONE, WITHDRAW_MANY, ADD_AND_WITHDRAW, WAIVE_ONE, WAIVE_MANY, ADD_SUB_DELEGATE_ONE, ADD_SUB_DELEGATE_MANY, WITHDRAW_SUB_DELEGATE_ONE, WITHDRAW_SUB_DELEGATE_MANY]
         operations:
           type: array
