@@ -22,7 +22,7 @@ info:
     
     Pääsuke internal APIs:
     <ul>
-      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-adapter-internal-api"/>document-adapter-internal-api, document-helper-internal, name-adapter-internal</a></li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-adapter-internal-api"/>document-adapter-internal-api, document-helper-internal, name-adapter-internal, sync-adapter-internal</a></li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-namespace-store/">namespace-store (UI and internal APIs)</li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-store/">rolebinding-store and mutator-adapter-internal</li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-store-internal-api/">document-store-internal-api</li>
@@ -763,9 +763,7 @@ components:
           type: string
           example: EE49109300123
         state:
-          type: string
-          format: enum
-          enum: [SUCCESS, FAILURE, DRAFT, CONFIRMED, WAITING, READY, PROCESSING, PROCESSED]
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/DocumentStateEnum'
         documentUuid:
           type: string
           format: uuid
@@ -773,7 +771,33 @@ components:
           type: array
           items:
             $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequestUuid'
+        expires:
+          type: string
+          format: date-time
+        confirmations:
+          type: array
+          items: 
+            $ref: '#/components/schemas/DocumentConfirmation'
     
+    DocumentConfirmation:
+      type: object
+      required: 
+        - person
+        - type
+        - dateTime
+      properties:
+        person:
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Person'
+        type:
+          $ref: '#/components/schemas/DocumentConfirmationType'
+        dateTime:
+          type: string
+          format: date-time
+
+    DocumentConfirmationType:
+      type: string
+      enum: [CONFIRMATION, SIGNATURE]
+
             
     DocumentWithUuid:
       type: object
