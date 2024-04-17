@@ -326,6 +326,18 @@ components:
           items:
             $ref: '#/components/schemas/UiMandateOperationsRequest'
 
+    UiConfirmation:
+      type: object
+      properties:
+        person:
+          $ref: '#/components/schemas/UiPerson'
+        type: 
+          type: string
+          enum: [CONFIRMATION, SIGNATURE]
+        created:
+          type: string
+          format: date-time
+
     UiMandateOperationsRequest:
       type: object
       required: 
