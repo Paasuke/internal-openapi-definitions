@@ -325,6 +325,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UiMandateOperationsRequest'
+        confirmations:
+          type: array
+          items:
+            $ref: '#/components/schemas/UiConfirmation'
 
     UiConfirmation:
       type: object
