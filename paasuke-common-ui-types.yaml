@@ -464,8 +464,9 @@ components:
               status:
                 type: string
                 description: |
-                 Status of the signing.
+                 Status of the signing or adding a confirmation
                  <ul>
+                   <li>CONFIRMATION – confirmation was successfully added</li>
                    <li>SIGNATURE – signature was successfully created</li>
                    <li>NO_VALID_CERTIFICATE - user is not a mobile-id/smart-id user or the id-card certificate has expired</li>
                    <li>FAILED (some internal error happened like MID_NOT_READY, INTERNAL_ERROR, NOT_VALID, SENDING_ERROR, DOCUMENT_UNUSABLE, OCSP_CHECK_FAILED, SIM_ERROR)</li>
@@ -473,7 +474,7 @@ components:
                    <li>EXPIRED_TRANSACTION - user didn't enter PIN2 </li>
                    <li>USER_CANCEL - user cancelled</li>
                    <li>USER_SELECTED_WRONG_VC - in Smart-ID user selected wrong control code</li></ul>
-                enum: [SIGNATURE, NO_VALID_CERTIFICATE, FAILED, PHONE_ABSENT, EXPIRED_TRANSACTION, USER_CANCEL, USER_SELECTED_WRONG_VC]
+                enum: [CONFIRMATION, SIGNATURE, NO_VALID_CERTIFICATE, FAILED, PHONE_ABSENT, EXPIRED_TRANSACTION, USER_CANCEL, USER_SELECTED_WRONG_VC]
               processingStarted:
                 type: boolean
     
