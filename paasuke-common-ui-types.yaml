@@ -531,7 +531,7 @@ components:
             ]
     
     UiActionResults:
-      description: Validation errors (if they were found before processing) or (if processing was ) information how did processing go.
+      description: Information how did processing go (returned if at least one operation failed)
       content:
         application/json:
           schema:
