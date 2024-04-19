@@ -494,9 +494,44 @@ components:
               processingStarted:
                 type: boolean
     
+    UiValidationErrors:
+      description: Validation errors that were found (by the rule engine).
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/UiActionResult'
+            example: [
+              {
+                "uiUuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "mandateOperationResultUuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "status": "SUCCESS",
+                "failureMessages": [
+                  {
+                    "code": "error.123.this.role.cannot.be.added.to.legal.person",
+                    "parameters": [
+                      "kala", "mati"
+                    ]
+                  }
+                ]
+              },
+              {
+                "actionUuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "mandateOperationResultUuid": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                "status": "SUCCESS",
+                "failureMessages": [
+                  {
+                    "et": "Sellest volitusest ei ole võimalik loobuda, kuna XYZ",
+                    "en": "Hello",
+                    "ru": "Привет"
+                  }
+                ]
+              },
+            ]
     
     UiActionResults:
-      description: How did processing go.
+      description: Validation errors (if they were found before processing) or (if processing was ) information how did processing go.
       content:
         application/json:
           schema:
