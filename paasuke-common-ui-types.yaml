@@ -38,6 +38,7 @@ info:
     
     Changelog:
     <ul>
+      <li>2024-04-19 - added CONFIRMATION</li>
       <li>2024-04-04 - added UiDocument</li>
       <li>2024-03-01 - added mandate.subDelegable</li>
       </ul>
@@ -455,7 +456,7 @@ components:
     
     
     SigningResult:
-      description: Whether the signing failed or succeeded. After a signature has been added the system might start processing mandate operations. This happens when the needed amount of people have signed the document. The system signals back (via field "processingStarted") to the UI if the processing was started or not.
+      description: Whether the signing (or adding a confirmation) failed or succeeded. After a signature has been added the system might start processing mandate operations. This happens when the needed amount of people have signed the document. The system signals back (via field "processingStarted") to the UI if the processing was started or not.
       content:
         application/json:
           schema:
