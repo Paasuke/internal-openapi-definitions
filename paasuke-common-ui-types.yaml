@@ -101,6 +101,20 @@ components:
 
   schemas:
     
+    UiAcceptMandateOperationsResult:
+      type: object
+      properties:
+        requestUuid:
+          type: string
+          format: uuid
+          description: UUID of created requst
+        needsSigning:
+          type: boolean
+          description: Wheter the operations involved must be signed
+        processingStarted:
+          type: boolean
+          description: If confirmation was added but someone else needs to confirm as well then this is set to false. If needsSigning is true then this is always false.
+    
     FinalizeSignature:
       type: object
       properties:
@@ -480,19 +494,6 @@ components:
               processingStarted:
                 type: boolean
     
-    UiAcceptMandateOperationsResult:
-      type: object
-      properties:
-        requestUuid:
-          type: string
-          format: uuid
-          description: UUID of created requst
-        needsSigning:
-          type: boolean
-          description: Wheter the operations involved must be signed
-        processingStarted:
-          type: boolean
-          description: If confirmation was added but someone else needs to confirm as well then this is set to false. If needsSigning is true then this is always false.
     
     UiActionResults:
       description: How did processing go.
