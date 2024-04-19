@@ -374,6 +374,9 @@ components:
           type: string
           format: date-time
           description: Created time.
+        canSkipSigning:
+          type: boolean
+          description: If this is true then signing is not required.  
 
 
     UiMandate:
