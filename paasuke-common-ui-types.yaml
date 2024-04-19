@@ -100,19 +100,6 @@ components:
         enum: [REPRESENTED_PARTY, OVERRIDDEN]
 
   schemas:
-    UiAcceptMandateOperationsResult:
-      type: object
-      properties:
-        requestUuid:
-          type: string
-          format: uuid
-          description: UUID of created requst
-        needsSigning:
-          type: boolean
-          description: Wheter the operations involved must be signed
-        processingStarted:
-          type: boolean
-          description: If confirmation was added but someone else needs to confirm as well then this is set to false. If needsSigning is true then this is always false.
     
     FinalizeSignature:
       type: object
@@ -492,6 +479,20 @@ components:
                 enum: [CONFIRMATION, SIGNATURE, NO_VALID_CERTIFICATE, FAILED, PHONE_ABSENT, EXPIRED_TRANSACTION, USER_CANCEL, USER_SELECTED_WRONG_VC]
               processingStarted:
                 type: boolean
+    
+    UiAcceptMandateOperationsResult:
+      type: object
+      properties:
+        requestUuid:
+          type: string
+          format: uuid
+          description: UUID of created requst
+        needsSigning:
+          type: boolean
+          description: Wheter the operations involved must be signed
+        processingStarted:
+          type: boolean
+          description: If confirmation was added but someone else needs to confirm as well then this is set to false. If needsSigning is true then this is always false.
     
     UiActionResults:
       description: How did processing go.
