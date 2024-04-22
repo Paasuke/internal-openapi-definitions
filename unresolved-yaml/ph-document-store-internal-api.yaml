@@ -1,7 +1,7 @@
 openapi: 3.0.0
 servers:
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/aasaru/ph-document-store-internal-api/0.8.0
+    url: https://virtserver.swaggerhub.com/aasaru/ph-document-store-internal-api/0.9.0
 
 info:
   version: 0.9.0
@@ -22,7 +22,7 @@ info:
     
     Pääsuke internal APIs:
     <ul>
-      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-adapter-internal-api"/>document-adapter-internal-api, document-helper-internal, name-adapter-internal</a></li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-adapter-internal-api"/>document-adapter-internal-api, document-helper-internal, name-adapter-internal, sync-adapter-internal</a></li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-namespace-store/">namespace-store (UI and internal APIs)</li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-store/">rolebinding-store and mutator-adapter-internal</li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-store-internal-api/">document-store-internal-api</li>
@@ -36,6 +36,11 @@ info:
     
         
     <h2>Changelog</h2>
+    <h3>0.9.0 - PH-1306 - 2024-04-18</h3>
+    <ul>
+      <li>added body to addApproval() and removed addSignature() as not used</li>
+    </ul>
+    
     <h3>0.8.0 - PH-827 - 2024-04-04</h3>
     <ul>
       <li>added getDocuments</li>
@@ -96,7 +101,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/schemas/UiProblem'
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/schemas/Problem'
     post:
       operationId: createDocument
       tags:
@@ -424,16 +429,16 @@ paths:
                 $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationProcessingResult'
 
 
-  /represented-parties/{representedPartyCode}/documents/{documentUuid}/confirmations:
+  /represented-parties/{representedPartyCode}/documents/{documentUuid}/approvals:
     post:
-      summary: Add a confirmation
-      operationId: addConfirmation
+      summary: Add an approval.
+      operationId: addApproval
       tags:
         - document-store-internal
       parameters:
         - name: representedPartyCode
           in: path
-          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p>
           example: EE10391131
           required: true
           schema:
@@ -446,76 +451,18 @@ paths:
             type: string
             format: uuid
       responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequestUuid'
-          # -----------------------------------------------------
-          # Links
-          # -----------------------------------------------------
-          links:
-            GetMandateOperationsRequest:
-              operationId: getMandateOperationsRequest
-              parameters:
-                userId: '$response.body#/requestUuid'
-              description: >
-                The `requestUuid` value returned in the response can be used as
-                the `requestUuid` parameter in `GET /mandate-operations-requests/{requestUuid}`.
-          # -----------------------------------------------------
+        '200':
+          description: Approval was sucesfully saved.
+        '400':
+          description: Incorrect payload, for example type is not 'CONFIRMATION' or document is in incorrect state.
       requestBody:
         content:
             application/json:
               schema:
-                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequest'
-              example: {}
+                $ref: '#/components/schemas/DocumentConfirmation'
+                       
 
-  /represented-parties/{representedPartyCode}/documents/{documentUuid}/signatures:
-    post:
-      summary: Add a signature
-      operationId: addSignature
-      tags:
-        - document-store-internal
-      parameters:
-        - name: representedPartyCode
-          in: path
-          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
-          example: EE10391131
-          required: true
-          schema:
-            type: string
-        - name: documentUuid
-          in: path
-          description: Document UUID
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequestUuid'
-          # -----------------------------------------------------
-          # Links
-          # -----------------------------------------------------
-          links:
-            GetMandateOperationsRequest:
-              operationId: getMandateOperationsRequest
-              parameters:
-                userId: '$response.body#/requestUuid'
-              description: >
-                The `requestUuid` value returned in the response can be used as
-                the `requestUuid` parameter in `GET /mandate-operations-requests/{requestUuid}`.
-          # -----------------------------------------------------
-      requestBody:
-        content:
-            application/json:
-              schema:
-                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateOperationsRequest'
+
   /represented-parties/{representedPartyCode}/documents/{documentUuid}/pdfs:
     post:
       summary: Save pdfs
@@ -665,12 +612,12 @@ paths:
           
   /represented-parties/{representedPartyCode}/documents/{documentUuid}/signers/{signer}:
     post:
-      summary: Save a new signer together with asicE and hashcode container
+      summary: Save information about new signature as asicE and hashcode container
       operationId: saveAsiceSignerAndHashcodeContainer
       tags:
         - document-store-internal
       description: |
-        Save hashcode container, asice, and user in a single transaction.
+        Save hashcode container and asicE in a single transaction.
         
       parameters:
         - name: representedPartyCode
