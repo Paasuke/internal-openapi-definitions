@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
-  version: 1.26.0
-  title: document-adapter-internal-api, document-helper-internal, name-adapter-internal
+  version: 2.29.0
+  title: document-adapter-internal-api, document-helper-internal, name-adapter-internal, sync-adapter
   description: |
     Pääsuke public APIs:
     <ul>
@@ -18,7 +18,7 @@ info:
     
     Pääsuke internal APIs:
     <ul>
-      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-adapter-internal-api"/>document-adapter-internal-api, document-helper-internal, name-adapter-internal</a></li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-adapter-internal-api"/>document-adapter-internal-api, document-helper-internal, name-adapter-internal, sync-adapter-internal</a></li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-namespace-store/">namespace-store-internal-api</li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-store/">rolebinding-store and mutator-adapter-internal</li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-store-internal-api/">document-store-internal-api</li>
@@ -29,26 +29,31 @@ info:
       <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/">Pääsuke common UI types</a></li>
       <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-types/">Pääsuke common types used in internal and xRoad APIs</a></li>
     </ul>
+    Changelog:
+    <ul>
+      <li>2.29.0 - hasLegalCapacity võtab JWT andmed ette header parameetritena, lisatud checkPerson</li>
+      <li>1.28.0 - createApprovalGroupNotifications()</li>
+    </ul>
 
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
 servers:
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/aasaru/ph-document-adapter-internal-api/1.26.0
+    url: https://virtserver.swaggerhub.com/aasaru/ph-document-adapter-internal-api/2.29.0
 
 tags:
   - name: name-adapter-internal
   - name: document-adapter-internal
   - name: document-helper-internal
-  - name: sync-adapter
+  - name: sync-adapter-internal
 
 paths:
 
   /legal-entities/{representedPartyCode}/representation-rights:
     get:
       tags:
-        - sync-adapter
+        - sync-adapter-internal
       operationId: canIndividualsRepresentLegalEntity
       summary: Among the individuals sent as query parameter, does there exist a group of persons who collectively have the right to represent the representedParty. Makes a query to the business registry.
       parameters:
@@ -100,7 +105,49 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.1#/components/schemas/UiProblem'
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
+
+  /person:
+    put:
+      tags:
+        - name-adapter-internal
+      summary: Check if entered person is valid 
+      operationId: checkPerson
+      parameters:
+      - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/userPersonalCode'
+      - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/userRepresentedPartyCode'
+      requestBody:
+        description: Information that user typed in about the user. 
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Person'
+      responses:
+        '200':
+          description: Details of the person if it was found
+          content:
+            application/json:
+              schema:
+                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Person'
+        '400':
+          description: Problems with person
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
+        '504':
+          description: Timeout connecting to upstream server
 
 
   /person/legal-capacity:
@@ -108,7 +155,10 @@ paths:
       tags:
         - name-adapter-internal
       operationId: hasLegalCapacity
-      summary: Check from population registry if the person (personalCode taken from JWT) posesses active legal capacity. (Kontrolli Rahvastikuregistrist, et portaali sisse loginud isiku teovõimet ei ole piiratud). 
+      summary: Check from population registry if the person on field userPersonalCode posesses active legal capacity. (Kontrolli Rahvastikuregistrist, et portaali sisse loginud isiku teovõimet ei ole piiratud). 
+      parameters:
+      - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/userPersonalCode'
+      - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/userRepresentedPartyCode'
       responses:
         '200':
           description: Created
@@ -340,7 +390,50 @@ paths:
             
         '500':
           description: Failed to create notifications
-          
+
+  /documents/{documentUuid}/approval-groups/notifications:
+    post:
+      summary: Create a list of e-mail notifications to be sent out to the members of approval group
+      operationId: createApprovalGroupNotifications
+      tags: 
+        - document-helper-internal
+      description: |
+        Create a list of email notifications to be sent out to members of approval group - that is to board members of legal entities that have shared representation (ühisesindusõigus)
+      parameters:
+        - name: documentUuid
+          in: path
+          description: Document UUID
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: List of persons who can represent the company (alone or jointly) except the person who initiated the document (korralduse algataja)
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: 
+              - persons
+              properties:
+                persons:
+                  type: array
+                  items:
+                    $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Person'
+      responses:
+        '200':
+          description: List of notifications to send out. If the list is empty then no notifications are to be sent out.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+            
+        '500':
+          description: Failed to create notifications
+               
           
 components:
   schemas:
