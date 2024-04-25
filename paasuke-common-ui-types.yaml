@@ -38,12 +38,13 @@ info:
     
     Changelog:
     <ul>
+      <li>2024-04-25 - added UiDocument.expiration</li>
       <li>2024-04-19 - added CONFIRMATION</li>
       <li>2024-04-04 - added UiDocument</li>
       <li>2024-03-01 - added mandate.subDelegable</li>
       </ul>
 
-  version: '1.5'
+  version: '1.6'
 
 
 components:
@@ -345,6 +346,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/UiConfirmation'
+        expiration:
+          type: string
+          format: date-time
+          description: Document expiration date and time.
 
     UiConfirmation:
       type: object
