@@ -101,7 +101,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/schemas/Problem'
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/schemas/UiProblem'
     post:
       operationId: createDocument
       tags:
