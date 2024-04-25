@@ -1,10 +1,10 @@
 openapi: 3.0.0
 info:
-  version: 1.24.0
+  version: 1.31.0
   title: ph-rolebinding-ui-api and document-adapter-ui-api
   description: |
     Served by rolebinding-adapter and document-adapter.
-  
+    
     Pääsuke public APIs:
     <ul>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/x-road-services-consumed-by-paasuke/">X-road services consumed by Pääsuke</a></li>
@@ -20,7 +20,7 @@ info:
     
     Pääsuke internal APIs:
     <ul>
-      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-adapter-internal-api"/>document-adapter-internal-api, document-helper-internal, name-adapter-internal</a></li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-adapter-internal-api"/>document-adapter-internal-api, document-helper-internal, name-adapter-internal, sync-adapter-internal</a></li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-namespace-store/">namespace-store-internal-api</li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-store/">rolebinding-store and mutator-adapter-internal</li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-store-internal-api/">document-store-internal-api</li>
@@ -31,14 +31,25 @@ info:
       <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/">Pääsuke common UI types</a></li>
       <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-types/">Pääsuke common types used in internal and xRoad APIs</a></li>
     </ul>
-        
     
+    <h3>Changelog</h3>
+    <ul>
+      <li>1.30.0 (22.04.2024) - added canSkipSigning</li>
+      <li>1.29.0 (18.04.2024) - added canSkipSigning</li>
+      <li>1.28.0 (17.04.2024) - added list of confirmers to a document</li>
+      <li>1.27.0 (04.04.2024) - added getRepresentedPartyDocuments</li>
+      <li>1.26.0 (01.03.2024) - getRepresenteesWithMandates renamed to getMandatesByDelegate and added constants/li>
+      <li>1.25.0 (27.02.2024) - new version - getDelegatesWithMandates renamed to getMandatesByRepresentee and added constants</li>
+    </ul>
+  
+  
+
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
 servers:
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/aasaru/ph-rolebinding-ui-api/1.24.0
+    url: https://virtserver.swaggerhub.com/aasaru/ph-rolebinding-ui-api/1.30.0
 tags:
   - name: rolebinding-adapter-ui
   - name: document-adapter-ui
@@ -61,7 +72,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/UiAddableRoleOrWarning'
-                
+
         '500':
           description: Internal server error
           content:
@@ -73,22 +84,18 @@ paths:
 
 
 
-  /delegates/mandates:
+  /representees/{personKey}/delegates-with-mandates:
     get:
       tags:
         - rolebinding-adapter-ui
-      summary: List representee (taken from JWT) delegates with mandates (that are currently valid or will become valid in the future)
-      operationId: getDelegatesWithMandates
+      summary: List representee delegates with mandates (that are currently valid or will become valid in the future)
+      operationId: getMandatesByRepresentee
       description: |
       parameters:
         - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/parameters/OverrideRepresentedPartyCode'
-        - name: representeeUuid
-          in: header
-          description: Display mandates from this representee that are sub-delegated by representedPerson
-          required: false
-          schema:
-            type: string
-            example: EE12345688
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/parameters/PersonKeyPathParameter'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/parameters/HiddenHeaderParameter'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/parameters/SubDelegatedByPersonKeyQueryParameter'
       responses:
         '200':
           description: delegates matching the criteria
@@ -129,23 +136,18 @@ paths:
           description: User is not allowed to enter Pääsuke
 
 
-
-  /representees/mandates:
+  /delegates/{personKey}/representees-with-mandates:
     get:
       tags:
         - rolebinding-adapter-ui
-      summary: List representees who have given mandates to the delegate (taken from JWT). With each record the mandates (that are currently active or will become active in the future) are included. 
-      operationId: getRepresenteesWithMandates
+      summary: List delegate representees with mandates (that are currently active or will become active in the future).
+      operationId: getMandatesByDelegate
       description: |
-      parameters: 
+      parameters:
         - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/parameters/OverrideRepresentedPartyCode'
-        - name: delegateUuid
-          in: header
-          description: Display mandates of this delegate that are sub-delegated by representedPerson
-          required: false
-          schema:
-            type: string
-            example: EE12345688
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/parameters/PersonKeyPathParameter'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/parameters/HiddenHeaderParameter'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/parameters/SubDelegatedByPersonKeyQueryParameter'
       responses:
         '200':
           description: represented persons matching the criteria
@@ -170,6 +172,38 @@ paths:
 
 
   /documents:
+    get:
+      tags:
+        - document-adapter-ui
+      summary: Get documents that are in state to be displayed to the user
+      operationId: getRepresentedPartyDocuments
+      description: |
+      parameters:
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/parameters/OverrideRepresentedPartyCode'
+      responses:
+        '200':
+          description: Documents that can be displayed to the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/schemas/UiDocument'
+        '400':
+          description: bad input parameter
+        '401':
+          description: Unauthorized. Person JWT not included.
+        '403':
+          description: Forbidden. The user is not allowed to view documents.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/schemas/UiProblem'
+
     post:
       tags:
         - document-adapter-ui
@@ -225,6 +259,48 @@ paths:
                 type: array
                 items:
                   $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/schemas/UiProblem'
+  /documents/{documentUuid}/notify-approval-group:
+    get:
+      tags:
+        - document-adapter-ui
+      summary: Send notifications to the approval group.
+      description: |
+        
+      operationId: notifyApprovalGroup
+      parameters:
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/parameters/OverrideRepresentedPartyCode'
+        - name: documentUuid
+          in: path
+          description: Document (signed container) UUID
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of persons who were notified
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/schemas/UiPerson'
+        "403":
+          description: Forbidden. Request not authorized.
+        "404":
+          description: The document was not found.
+        "412":
+          description: The document is not in the right state
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/schemas/UiProblem'
+
+
   /documents/{documentUuid}/mandate-operations-requests/{requstUuid}/processing-report:
     get:
       tags:
@@ -288,6 +364,31 @@ paths:
           description: The document or MandateOperationsRequest was not found.
 
 
+  /documents/{documentUuid}/confirmation:
+    put:
+      tags:
+        - document-adapter-ui
+      summary: Add confirmation
+      operationId: addConfirmation
+      description: |
+        Adds confirmation to document. If document needs signing then first confirmation  triggers creating PDF-s and asicE container.
+      parameters:
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/responses/SigningResult'
+        '403':
+          description: The document is not associated with the current user
+        '404':
+          description: Document does not exist or is expired
+        '409':
+          description: Should be returned when the request is made but the document is not in the 'WAITING' state.
+
 
   /documents/{documentUuid}/signing/smart-id:
     post:
@@ -315,8 +416,8 @@ paths:
           description: Should be returned when the request is made but the document is not in the 'WAITING' state
         '500':
           description: SiGa or internal unexpected failure
-          
-          
+
+
   /documents/{documentUuid}/signing/smart-id/{sigaContainerId}:
     put:
       tags:
@@ -338,7 +439,10 @@ paths:
           schema:
             type: string
       requestBody:
-        $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/schemas/FinalizeSignature'
+        content:
+          application/json:
+            schema:
+              $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/schemas/FinalizeSignature'
       responses:
         '200':
           $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/responses/SigningResult'
@@ -348,8 +452,8 @@ paths:
           description: Container or document does not exist
         '409':
           description: Should be returned when the request is made but the document is not in the 'WAITING' state
-                  
-                  
+
+
   /documents/{documentUuid}/signing/mobile-id:
     post:
       tags:
@@ -386,8 +490,8 @@ paths:
           description: Should be returned when the request is made but the document is not in the 'WAITING' state
         '500':
           description: SiGa or internal unexpected failure
-          
-          
+
+
   /documents/{documentUuid}/signing/mobile-id/{sigaContainerId}:
     put:
       tags:
@@ -409,7 +513,10 @@ paths:
           schema:
             type: string
       requestBody:
-        $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/schemas/FinalizeSignature'
+        content:
+          application/json:
+            schema:
+              $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/schemas/FinalizeSignature'
       responses:
         '200':
           $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/responses/SigningResult'
@@ -419,8 +526,8 @@ paths:
           description: Container or document does not exist
         '409':
           description: Should be returned when the request is made but the document is not in the 'WAITING' state
-     
-          
+
+
   /documents/{documentUuid}/signing/id-card:
     post:
       tags:
@@ -473,8 +580,8 @@ paths:
             the user sent certificate Common name does not match the logged in user.
         '500':
           description: SiGa or internal unexpected failure
-          
-          
+
+
   /documents/{documentUuid}/signing/id-card/{sigaContainerId}:
     put:
       tags:
@@ -513,7 +620,7 @@ paths:
           description: Container or document does not exist
         '409':
           description: Should be returned when the request is made but the document is not in the 'WAITING' state
-          
+
 
 
 components:
@@ -528,10 +635,10 @@ components:
         managesNamespaces:
           description: Where the user is currently a mandates manager
           type: array
-          items: 
+          items:
             type: string
             example: "TERVISEKASSA_XTEE_HALDUR"
-    
+
     UiAddableRole:
       type: object
       properties:
@@ -552,8 +659,8 @@ components:
             canSkipSigningOnAdd: true
             mustStartToday: true
             cannotSetEndDate: true
-            
-            
+
+
     UiAddableRoleOrWarning:
       type: object
       properties:
