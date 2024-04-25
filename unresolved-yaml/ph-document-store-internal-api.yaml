@@ -195,7 +195,7 @@ paths:
     put:
       summary: Update doument state
       description: |
-        Update document status
+        Update document state
       operationId: updateDocument
       tags:
         - document-store-internal
