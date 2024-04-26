@@ -665,7 +665,7 @@ paths:
         '500':
           description: Saving failed
 
-  /represented-parties/{representedPartyCode}/documents/{documentUuid}/rejections/{rejector}:
+  /represented-parties/{representedPartyCode}/documents/{documentUuid}/rejections:
     post:
       summary: Mark document as rejected
       operationId: rejectDocument
@@ -682,12 +682,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: rejector
-          in: path
-          required: true
-          description: identifier of the person who rejected the document
-          schema:
-            type: string
         - name: documentUuid
           in: path
           required: true
@@ -702,9 +696,8 @@ paths:
             schema:
               type: object
               properties: 
-                state:
-                  type: string
-                  description: Must be set to REJECTED
+                rejector:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Person'
               
       responses:
         '200':
