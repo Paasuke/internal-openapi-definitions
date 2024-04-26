@@ -3,7 +3,7 @@ info:
   version: 2.29.0
   title: document-adapter-internal-api, document-helper-internal, name-adapter-internal, sync-adapter
   description: |
-    Pääsuke public APIs:
+    Pääsuke public APIs: 
     <ul>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/x-road-services-consumed-by-paasuke/">X-road services consumed by Pääsuke</a></li>
       <li><a href="https://app.swaggerhub.com/apis/aasaru/paasuke-x-road-services-to-query-mandates/">X-road services to query mandates that are stored in Pääsuke (Oraakliliides)</a></li>
@@ -176,7 +176,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.1#/components/schemas/UiProblem'
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
 
   /represented-parties/{representedPartyCode}/documents/{documentUuid}:
     put:
