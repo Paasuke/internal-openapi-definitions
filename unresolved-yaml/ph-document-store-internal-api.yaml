@@ -795,7 +795,6 @@ components:
       required: 
         - person
         - type
-        - dateTime
       properties:
         person:
           $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Person'
