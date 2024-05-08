@@ -39,6 +39,7 @@ info:
     <h3>0.9.3 - 2024-05-08</h3>
     <ul>
       <li>PH-1337 - Added method getStatsTotalAndUnique to pull statistics</li>
+      <li>getDocuments 500 changed from UiProblem to Problem</li>
     </ul>
     <h3>0.9.2 - 2024-05-03</h3>
     <ul>
@@ -116,7 +117,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/schemas/UiProblem'
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
     post:
       operationId: createDocument
       tags:
@@ -791,8 +792,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StatsTotalAndUniqueTable'
-        '404':
-          description: not found
+        '400':
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
+          
 
 components:
   schemas:
