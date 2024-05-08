@@ -807,26 +807,35 @@ components:
         order:
           type: integer
           description: The rows with lower value shoulbe be displayed first
-        operation:
+          example: 100
+        groupType:
           type: string
+          example: TOTAL_ORDER
         descriptionStart:
           type: string
+          example: Kokku täideti 
         total:
           type: integer
+          example: 309
         desciptionMiddle:
           type: string
+          example: korraldust, mis oli koostatud
         unique:
           type: integer
+          example: 39
         descriptionEnd:
           type: string
+          example: erineva isiku nimel
         firstDate:
           type: string
           format: date
           description: Report start date (same as passed in as a parameter)
+          example: 2024-04-01
         lastDate:
           type: string
           format: date
           description: Report end date (same as passed in as a parameter)
+          example: 2024-04-07
     
     
     Document:
