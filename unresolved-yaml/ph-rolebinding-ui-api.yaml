@@ -1,0 +1,707 @@
+openapi: 3.0.0
+info:
+  version: 1.32.1
+  title: ph-rolebinding-ui-api and document-adapter-ui-api
+  description: |
+    Served by rolebinding-adapter and document-adapter.
+    
+    Pääsuke public APIs:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/x-road-services-consumed-by-paasuke/">X-road services consumed by Pääsuke</a></li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/paasuke-x-road-services-to-query-mandates/">X-road services to query mandates that are stored in Pääsuke (Oraakliliides)</a></li>
+    </ul>
+    
+    Pääsuke UI APIs:
+    <ul>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-ui-api/">rolebinding-adapter-ui-api and document-adapter-ui-api</li>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-mutator-ui-api/">mutator-adapter-ui-api, namespace-store-ui-api</li>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-name-ui-api"/>name-adapter-ui-api</a></li>
+    </ul>
+    
+    Pääsuke internal APIs:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-adapter-internal-api"/>document-adapter-internal-api, document-helper-internal, name-adapter-internal, sync-adapter-internal</a></li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-namespace-store/">namespace-store-internal-api</li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-store/">rolebinding-store and mutator-adapter-internal</li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-store-internal-api/">document-store-internal-api</li>
+    </ul>
+    
+    Types:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/">Pääsuke common UI types</a></li>
+      <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-types/">Pääsuke common types used in internal and xRoad APIs</a></li>
+    </ul>
+    
+    <h3>Changelog</h3>
+    <ul>
+      <li>1.31.1 (10.05.2024) - UiSystemMandateTriplets renamed to UiMandateTriplets
+      <li>1.31.0 (25.04.2024) - added document.expiration, new method addRejection, notify approval group changed to PUT</li>
+      <li>1.30.0 (22.04.2024) - added canSkipSigning</li>
+      <li>1.29.0 (18.04.2024) - added canSkipSigning</li>
+      <li>1.28.0 (17.04.2024) - added list of confirmers to a document</li>
+      <li>1.27.0 (04.04.2024) - added getRepresentedPartyDocuments</li>
+      <li>1.26.0 (01.03.2024) - getRepresenteesWithMandates renamed to getMandatesByDelegate and added constants/li>
+      <li>1.25.0 (27.02.2024) - new version - getDelegatesWithMandates renamed to getMandatesByRepresentee and added constants</li>
+    </ul>
+  
+  
+
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/aasaru/ph-rolebinding-ui-api/1.32.1
+tags:
+  - name: rolebinding-adapter-ui
+  - name: document-adapter-ui
+
+paths:
+  /roles/addable:
+    get:
+      tags:
+        - rolebinding-adapter-ui
+      summary: List roles that the user can add
+      operationId: getAddableRoles
+      parameters:
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/parameters/OverrideRepresentedPartyCode'
+      responses:
+        '200':
+          description: list of roles user can add together with restrictions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UiAddableRoleOrWarning'
+
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/schemas/UiProblem'
+
+
+
+  /representees/{personKey}/delegates-with-mandates:
+    get:
+      tags:
+        - rolebinding-adapter-ui
+      summary: List representee delegates with mandates (that are currently valid or will become valid in the future)
+      operationId: getMandatesByRepresentee
+      description: |
+      parameters:
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/parameters/OverrideRepresentedPartyCode'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/parameters/PersonKeyPathParameter'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/parameters/HiddenHeaderParameter'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/parameters/SubDelegatedByPersonKeyQueryParameter'
+      responses:
+        '200':
+          description: delegates matching the criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/schemas/UiMandateTriplets'
+        '400':
+          description: bad input parameter
+        '401':
+          description: Forbidden
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/schemas/UiProblem'
+
+  /user:
+    get:
+      tags:
+        - rolebinding-adapter-ui
+      summary: Get user access rights
+      operationId: getUser
+      description: Get user parameters for the selected represented party.
+      responses:
+        "200":
+          description: User access rights
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+        "403":
+          description: User is not allowed to enter Pääsuke
+
+
+  /delegates/{personKey}/representees-with-mandates:
+    get:
+      tags:
+        - rolebinding-adapter-ui
+      summary: List delegate representees with mandates (that are currently active or will become active in the future).
+      operationId: getMandatesByDelegate
+      description: |
+      parameters:
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/parameters/OverrideRepresentedPartyCode'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/parameters/PersonKeyPathParameter'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/parameters/HiddenHeaderParameter'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/parameters/SubDelegatedByPersonKeyQueryParameter'
+      responses:
+        '200':
+          description: represented persons matching the criteria
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/schemas/UiMandateTriplets'
+        '400':
+          description: bad input parameter
+        '401':
+          description: Forbidden
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/schemas/UiProblem'
+
+
+  /documents:
+    get:
+      tags:
+        - document-adapter-ui
+      summary: Get documents that are in state to be displayed to the user
+      operationId: getRepresentedPartyDocuments
+      description: |
+      parameters:
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/parameters/OverrideRepresentedPartyCode'
+      responses:
+        '200':
+          description: Documents that can be displayed to the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/schemas/UiDocument'
+        '400':
+          description: bad input parameter
+        '401':
+          description: Unauthorized. Person JWT not included.
+        '403':
+          description: Forbidden. The user is not allowed to view documents.
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/schemas/UiProblem'
+
+    post:
+      tags:
+        - document-adapter-ui
+      summary: Create a document
+      description: |
+        From JWT it finds the representee (person being represented) and owner (person logged in) and calls documents-store method /documents. Only state:DRAFT is currently allowed.
+      operationId: createDocumentInState
+      parameters:
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/parameters/OverrideRepresentedPartyCode'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: string
+                  example: DRAFT
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documentUuid:
+                    type: string
+                    description: UUID of created document
+                    format: uuid
+          links:
+            GetDocumentByUuid:
+              operationId: getDocumentByUuid
+              parameters:
+                userId: $response.body#/documentUuid
+              description: |
+                The `documentUuid` value returned in the response can be used as the `documentUuid` parameter in `GET /mandate-operations-requests/{requestUuid}`.
+        "400":
+          description: Incorrect format of the payload.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/schemas/UiProblem'
+        "403":
+          description: Forbidden. Person is not logged in
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/schemas/UiProblem'
+  /documents/{documentUuid}/notify-approval-group:
+    put:
+      tags:
+        - document-adapter-ui
+      summary: Send notifications to the approval group.
+      description: |
+        
+      operationId: notifyApprovalGroup
+      parameters:
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/parameters/OverrideRepresentedPartyCode'
+        - name: documentUuid
+          in: path
+          description: Document (signed container) UUID
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of persons who were notified
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/schemas/UiPerson'
+        "403":
+          description: Forbidden. Request not authorized.
+        "404":
+          description: The document was not found.
+        "412":
+          description: The document is not in the right state
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/schemas/UiProblem'
+
+
+  /documents/{documentUuid}/mandate-operations-requests/{requstUuid}/processing-report:
+    get:
+      tags:
+        - document-adapter-ui
+      summary: Get processing report of a MandateOperationsRequest.
+      description: |
+        When document is processed (by sending out individual requests over x-road or internally in Pääsuke) then for each MandateOperation a result is stored. This method pulls out these results for a MandateOperationsRequest.
+      operationId: getMandateOperationsRequestReport
+      parameters:
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/parameters/OverrideRepresentedPartyCode'
+        - name: documentUuid
+          in: path
+          description: Document (signed container) UUID
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            format: uuid
+        - name: requstUuid
+          in: path
+          description: MandateOperationsRequest UUID
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: How did processing go.
+          content:
+            application/json:
+              schema:
+                type: array
+                example:
+                  - actionUuid: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                    uiUuid: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                    mandateOperationResultUuid: 3fa85f64-5717-4562-b3fc-2c963f66afa7
+                    status: SUCCESS
+                    failureMessages:
+                      - code: error.123.this.role.cannot.be.added.to.legal.person
+                        parameters:
+                          - kala
+                          - mati
+                  - actionUuid: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                    uiUuid: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                    mandateOperationResultUuid: 3fa85f64-5717-4562-b3fc-2c963f66afa7
+                    status: SUCCESS
+                    failureMessages:
+                      - et: "Seda volitust ei ole võimalik lisada, kuna XYZ"
+                        en: Hello
+                        ru: Привет
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/schemas/UiActionResult'
+        "202":
+          description: The document is still being processed. Please try in a short while.
+        "403":
+          description: Forbidden. Request not authorized.
+        "404":
+          description: The document or MandateOperationsRequest was not found.
+
+
+  /documents/{documentUuid}/confirmations:
+    post:
+      tags:
+        - document-adapter-ui
+      summary: Add a confirmation
+      operationId: addConfirmation
+      description: |
+        Adds a confirmation to document. 
+      parameters:
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/responses/SigningResult'
+        '403':
+          description: The document is not associated with the current user
+        '404':
+          description: Document does not exist or is expired
+        '409':
+          description: Should be returned when the request is made but the document is not in the 'READY' or 'WAITING' state.
+
+  /documents/{documentUuid}/rejections:
+    post:
+      tags:
+        - document-adapter-ui
+      summary: Reject document
+      operationId: rejectDocument
+      description: |
+        Reject document.
+      parameters:
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  description: Must be set to REJECTED
+                  type: string
+                  example: REJECTED
+      responses:
+        '200':
+          description: Document was set to REJECTED state
+        '403':
+          description: The document is not associated with the current user
+        '404':
+          description: Document does not exist or is expired
+        '409':
+          description: Should be returned when the request is made but the document is not in 'WAITING' state.
+
+
+  /documents/{documentUuid}/signing/smart-id:
+    post:
+      tags:
+        - document-adapter-ui
+      summary: Start Smart-ID signing process
+      operationId: startSmartIdSigning
+      description: |
+        Starts signing process, user should see certificate selection on their device and then be prompted for their PIN2 for signing.
+      parameters:
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/responses/SigningStarted'
+        '403':
+          description: User can not sign document (Wrong represented party)
+        '404':
+          description: Document or the hashcode container associated with the document was not found
+        '409':
+          description: Should be returned when the request is made but the document is not in the 'WAITING' state
+        '500':
+          description: SiGa or internal unexpected failure
+
+
+  /documents/{documentUuid}/signing/smart-id/{sigaContainerId}:
+    put:
+      tags:
+        - document-adapter-ui
+      summary: Finalize signing with Smart-ID
+      operationId: finalizeSmartIdSigning
+      description: |
+        Previously named finalizeSmartIdSigningAndProcessOperations
+      parameters:
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sigaContainerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/schemas/FinalizeSignature'
+      responses:
+        '200':
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/responses/SigningResult'
+        '403':
+          description: The document is not associated with the current user
+        '404':
+          description: Container or document does not exist
+        '409':
+          description: Should be returned when the request is made but the document is not in the 'WAITING' state
+
+
+  /documents/{documentUuid}/signing/mobile-id:
+    post:
+      tags:
+        - document-adapter-ui
+      summary: Start mobile-id signing process
+      operationId: startMobileIdSigning
+      description: |
+        Starts mobile-id signing process, and the user should be prompted for their PIN2 for signing on their mobile device.
+      parameters:
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phoneNo:
+                  description: Signers phone number with +372 prefix.
+                  example: +37255666777
+                  type: string
+      responses:
+        '200':
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/responses/SigningStarted'
+        '403':
+          description: User can not sign document (Wrong represented party)
+        '404':
+          description: Document or the hashcode container associated with the document was not found
+        '409':
+          description: Should be returned when the request is made but the document is not in the 'WAITING' state
+        '500':
+          description: SiGa or internal unexpected failure
+
+
+  /documents/{documentUuid}/signing/mobile-id/{sigaContainerId}:
+    put:
+      tags:
+        - document-adapter-ui
+      summary: Finalize signing with mobile-id
+      operationId: finalizeMobileIdSigning
+      description: |
+        Previously named finalizeMobileIdSigningAndProcess
+      parameters:
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sigaContainerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/schemas/FinalizeSignature'
+      responses:
+        '200':
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/responses/SigningResult'
+        '403':
+          description: The document is not associated with the current user
+        '404':
+          description: Container or document does not exist
+        '409':
+          description: Should be returned when the request is made but the document is not in the 'WAITING' state
+
+
+  /documents/{documentUuid}/signing/id-card:
+    post:
+      tags:
+        - document-adapter-ui
+      summary: Start id-card signing process
+      operationId: startIdCardSigning
+      description: |
+        Signable data is retreived from the server for user to sign on the browser.
+      parameters:
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                certificate:
+                  description: PEM encoded x.509 certificate the user wants to sign the document with
+                  type: string
+      responses:
+        '200':
+          description: Information neccessary for the user to start signing on the browser
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dataToSign:
+                    type: string
+                  sigaContainerId:
+                    type: string
+                  sigaGeneratedSignatureId:
+                    type: string
+                  digestAlgorithm:
+                    type: string
+        '403':
+          description: User can not sign document (Wrong represented party)
+        '404':
+          description: Document or the hashcode container associated with the document was not found
+        '409':
+          description: |
+            Should be returned when the request is made but the document is not in the 'WAITING' state or 
+            the user sent certificate Common name does not match the logged in user.
+        '500':
+          description: SiGa or internal unexpected failure
+
+
+  /documents/{documentUuid}/signing/id-card/{sigaContainerId}:
+    put:
+      tags:
+        - document-adapter-ui
+      summary: Finalize signing with id-card
+      operationId: finalizeIdCardSigning
+      description: Signature is added to an asice container. Previously named attachSignatureAndProcess
+      parameters:
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: sigaContainerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sigaGeneratedSignatureId:
+                  type: string
+                signedDataBase64:
+                  type: string
+      responses:
+        '200':
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/responses/SigningResult'
+        '403':
+          description: The document is not associated with the current user
+        '404':
+          description: Container or document does not exist
+        '409':
+          description: Should be returned when the request is made but the document is not in the 'WAITING' state
+
+
+
+components:
+  schemas:
+    UserInfo:
+      type: object
+      properties:
+        canOverrideRepresentedParty:
+          type: boolean
+          example: false
+          description: Does the user have any admin rights
+        managesNamespaces:
+          description: Where the user is currently a mandates manager
+          type: array
+          items:
+            type: string
+            example: "TERVISEKASSA_XTEE_HALDUR"
+
+    UiAddableRole:
+      type: object
+      properties:
+        code:
+          type: string
+          example: STAT_ESTAT:Respondent
+        subDelegable:
+          type: string
+          enum: ['YES', 'NO', 'ASK', 'LEGAL_PERSON_YES__NATURAL_PERSON_ASK', 'LEGAL_PERSON_YES__NATURAL_PERSON_NO']
+        restrictions:
+          type: object
+          description: Additional restrictions for UI
+          additionalProperties:
+            type: boolean
+          example:
+            delegateCanBeLegalEntity: true
+            delegateCanBeNaturalPerson: true
+            canSkipSigningOnAdd: true
+            mustStartToday: true
+            cannotSetEndDate: true
+
+
+    UiAddableRoleOrWarning:
+      type: object
+      properties:
+        addableRole:
+          $ref: '#/components/schemas/UiAddableRole'
+        warning:
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.7#/components/schemas/UiTranslation'
