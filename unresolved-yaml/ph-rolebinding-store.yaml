@@ -1,0 +1,685 @@
+openapi: 3.0.0
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/aasaru/ph-rolebinding-store/2.12.0
+
+info:
+  description: |
+    Pääsuke public APIs:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/x-road-services-consumed-by-paasuke/">X-road services consumed by Pääsuke</a></li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/paasuke-x-road-services-to-query-mandates/">X-road services to query mandates that are stored in Pääsuke (Oraakliliides)</a></li>
+    </ul>
+    
+    Pääsuke UI APIs:
+    <ul>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-ui-api/">rolebinding-adapter-ui-api and document-adapter-ui-api</li>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-mutator-ui-api/">mutator-adapter-ui-api, namespace-store-ui-api</li>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-name-ui-api"/>name-adapter-ui-api</a></li>
+    </ul>
+    
+    Pääsuke internal APIs:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-adapter-internal-api"/>document-adapter-internal-api, document-helper-internal, name-adapter-internal, sync-adapter-internal</a></li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-namespace-store/">namespace-store-internal-api</li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-store/">rolebinding-store and mutator-adapter-internal</li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-store-internal-api/">document-store-internal-api</li>
+    </ul>
+    
+    Types:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/">Pääsuke common UI types</a></li>
+      <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-types/">Pääsuke common types used in internal and xRoad APIs</a></li>
+    </ul>
+    
+
+    
+    <h2>Changelog</h2>
+
+    <h3>2.12.0 (10.05.2024)</h3>
+    <ul>
+      <li>new service PATCH autoAssignMandate</li>
+    </ul>
+  
+    <h3>2.11.0 (18.04.2024)</h3>
+    <ul>
+      <li>processMandateOperations returns status code XXX if processing was not started</li>
+    </ul>
+  
+    
+    <h3>2.10.0</h3>
+    <ul>
+      <li>Added new service updatePerson (PH-498)</li>
+    </ul>
+    
+    <h3>2.9.0</h3>
+    <ul>
+      <li>Added mandateInternal.subDelegator</li>
+      <li>Deprecated mandateInternal.subDelegatorIdentifier in favour of mandateInternal.subDelegator</li>
+    </ul>
+    
+    <h3>Release notes 2.8.0</h3>
+    <ul>
+      <li>Query getRepresenteeDelegatesWithMandates renamed into getMandatesByRepresentee - no task yet</li>
+      <li>Query getDelegateRepresenteesWithMandates renamed into getMandatesByDelegate - no task yet</li>
+      <li>Removed "update" from MandateLinksInternal - PH-1174</li>
+    </ul>
+        
+
+  version: 2.12.0
+  title: rolebinding-store and mutator-adapter-internal
+  contact:
+    url: https://github.com/e-gov/PH/
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: ph-rolebinding-store
+    description: Internal API-s provided by rolebinding-store 
+  - name: mutator-adapter-internal
+    description: Internal API-s provided by mutator-adapter
+
+paths:
+  /delegates/{delegate}/representees/mandates:
+    get:
+      tags:
+        - ph-rolebinding-store
+      summary: List persons the delegate can represent. Mandates (roles) are included.
+      operationId: getMandatesByDelegate
+      description: |
+        
+      parameters:
+        - name: delegate
+          in: path
+          description: Identifier of the delegate who'se mandate is being sub-delegated.
+          example: EE38302250123
+          required: true
+          schema:
+            type: string
+        - name: ns
+          in: query
+          description: "Only return mandates with specified namespace (the first part of the role until first colon). Also PAASUKE:<namespace> is returned"
+          example: "AGENCY-Q"
+          required: false
+          schema:
+            type: array
+            items:
+             type: string
+             example: 'EESTI_EE'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/subDelegatedByForDelegateRepresenteesQuery'
+      responses:
+        '200':
+          $ref: '#/components/responses/MandateTripletsInternal'
+        '400':
+          description: bad input parameter
+        '403':
+          description: Forbidden. Request not authorized.
+        '404':
+          description: Delegate is unknown.
+
+  /representees/{representee}/delegates/mandates:
+    get:
+      tags:
+        - ph-rolebinding-store
+      summary: List delegates with mandates
+      operationId: getMandatesByRepresentee
+      description: |
+        Returns list of delegates who have any mandates.
+        
+        Protos: Ettevõtte esindajad ja volitatud isikud.
+        
+        Kui Väikefirma (representee) on andnud Raamatupidamisfirmale (subDelegatedBy) mingi rolli koos edasivolitamise (edasidelegeerimise) õigusega, siis saab Raamatupidamisfirma selle parameetri abil küsida, kellele tema omakorda on vastava volituse edasi volitanud (delegeerinud).
+        
+      parameters:
+        - name: representee
+          in: path
+          description: Person identifier
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: subDelegatedBy
+          in: query
+          description: Only return mandates that are sub-delegated by this person (edasivolitaja).
+          required: false
+          example: EE10391132
+          schema:
+            type: string
+        - name: delegate
+          in: query
+          description: Only return mandates with this delegate (volitatu). This is used for TÖR queries and for getting superadmin mandates.
+          required: false
+          example: EE10391132
+          schema:
+            type: string
+        - name: ns
+          in: query
+          description: Only return mandates with specified namespace
+          required: false
+          example: BR_REPRIGHT
+          schema:
+            type: array
+            items:
+             type: string
+             example: 'BR_REPRIGHT'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/subDelegatedByForRepresenteeDelegatesQuery'
+      responses:
+        '200':
+          $ref: '#/components/responses/MandateTripletsInternal'
+        '400':
+          description: Bad input parameter
+        '403':
+          description: Forbidden. Request not authorized.
+        '404':
+          description: Representee is unknown.
+        '422':
+          description: Unprocessable request. Something went wrong.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
+
+  /representees/{representee}/delegates/{delegate}/mandates:
+    post:
+      tags:
+        - ph-rolebinding-store
+      summary: Add a mandate to a delegate under a representee
+      operationId: addMandate
+      description: |
+      
+        Kui liidestuv süsteem pakub seda teenust Pääsukesele, siis lubab Pääsuke oma kasutajaliidese kaudu volitusi anda ja selle teenuse abil Pääsuke edastab uue(d) volituse(d) liidestunud süsteemile.
+      parameters:
+        - name: representee
+          in: path
+          description: Person identifier
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: delegate
+          in: path
+          description: Person identifier. 
+          required: true
+          example: EE38302250123
+          schema:
+            type: string
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/userPersonalCode'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/userRepresentedPartyCode'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/X-Road-UserId'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/X-Road-Represented-Party'
+      requestBody:
+        $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/requestBodies/AddMandateTriplet'
+      
+      responses:
+        '202':
+          description: Accepted for processing
+        '400':
+          description: Incorrect format of the payload.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
+        '403':
+          description: Forbidden. Request not authorized.
+        '422':
+          description: Unprocessable request. Something went wrong.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
+        '501':
+          description: This request is not supported.
+
+    patch:
+      tags:
+        - ph-rolebinding-store
+      summary: Auto assign a mandate to a delegate under a representee
+      operationId: autoAssignMandate
+      description: |
+        User has a right to manage mandates but this right is stored in external system like PRIA or EMTA. This method is called by rolebinding-adapter to store copy of this fact. This service takes the orginal role code as parameter but changes it by adding "PAASUKE:" in the front and "#AUTO_ASSIGN" to the end. Also shorthens the validity period.
+      parameters:
+        - name: representee
+          in: path
+          description: Person identifier
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: delegate
+          in: path
+          description: Person identifier. 
+          required: true
+          example: EE38302250123
+          schema:
+            type: string
+      requestBody:
+        $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/requestBodies/AutoAssignMandateTriplet'
+      
+      responses:
+        '200':
+          description: OK, nothing new was added (existing mandate may have been extended)
+        '201':
+          description: New mandate was created.
+        '400':
+          description: 'Incorrect format of the payload or role code is not PAASUKE:<someNamespace>'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
+        '403':
+          description: Forbidden. Request not authorized.
+        '422':
+          description: Unprocessable request. Something went wrong.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
+        '501':
+          description: This request is not supported.
+
+  /representees/{representeeId}/delegates/{delegateId}/mandates/{mandateId}/subdelegates:
+    post:
+      tags:
+        - ph-rolebinding-store
+      summary: Sub-delegate a single mandate
+      operationId: addSubDelegate
+      description: |
+        Volituse edasivolitamine ehk edasidelegeerimine.
+      parameters:
+        - name: representeeId
+          in: path
+          description: Implementator can use any form of representee identifier (like internal person id). Pääsuke takes this value from 'addSubDelegate' link.
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: delegateId
+          in: path
+          description: Implementator can use any form of delegate identifier (like internal person id). Pääsuke takes this value from 'addSubDelegate' link.
+          example: EE38302250123
+          required: true
+          schema:
+            type: string
+        - name: mandateId
+          in: path
+          description: Implementator can use any form of mandate (or role) identifier (like internal mandate id). Pääsuke takes this value from 'addSubDelegate' link.
+          required: true
+          example: 8923032032
+          schema:
+            type: string
+            format: uuid
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/userPersonalCode'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/userRepresentedPartyCode'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/X-Road-UserId'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/X-Road-Represented-Party'
+      requestBody:
+        $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/requestBodies/MandateToSubDelegate'
+      
+      responses:
+        '202':
+          description: Accepted for processing
+        '400':
+          description: Incorrect format of the payload.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
+        '403':
+          description: Forbidden. Request not authorized.
+        '404':
+          description: Mandate to sub-delegate was not found
+        '422':
+          description: Unprocessable request. Something went wrong.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
+        '501':
+          description: This operation is not supported.
+
+
+  /nss/{ns}/representees/{representee}/delegate/mandates:
+    patch:
+      tags:
+        - ph-rolebinding-store
+      summary: Set representee dedelgates that are pulled from Äriregister or from Rahvastikuregister.
+      operationId: setRepresenteeDelegatesDefinedExternally
+      description: |
+        Äriregistrist/Rahvastikuregistrist muudatusi sünkroniseerivad mikroteenused kutsuvad seda Pääsukese siseselt välja (et edastada juhatuse liikmed, prokuristid jne). Kaasa antakse TO BE olukord.
+      parameters:
+        - name: ns
+          in: path
+          description: Namespace
+          example: GLOBAL1_EMTA
+          required: true
+          schema:
+            type: string
+        - name: representee
+          in: path
+          description: Person identifier.
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/AddMandatesTriplets'
+      
+      responses:
+        '200':
+          description: Request processed successfully
+        '400':
+          description: Incorrect payload.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
+        '403':
+          description: Forbidden. Request not authorized.
+        '422':
+          description: Unprocessable request. Something went wrong.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
+
+  /representees/{representeeId}/delegates/{delegateId}/mandates/{mandateId}:
+    put:
+      summary: Edit mandate (by ending the validity of it)
+      operationId: editMandate
+      tags:
+        - ph-rolebinding-store
+      description: |
+        The mandateId is returned by the query that returned the mandates. 
+      parameters:
+        - name: representeeId
+          in: path
+          description: Implementator can use any form of representee identifier (like internal person id). Pääsuke takes this value from 'delete' link.
+          example: EE12345678-123
+          required: true
+          schema:
+            type: string
+        - name: delegateId
+          in: path
+          description: Implementator can use any form of delegate identifier (like internal person id). Pääsuke takes this value from 'delete' link.
+          required: true
+          example: 754864
+          schema:
+            type: string
+        - name: mandateId
+          in: path
+          description: Implementator can use any form of mandate (or role) identifier (like internal mandate id). Pääsuke takes this value from 'delete' link.
+          required: true
+          example: 8647
+          schema:
+            type: string
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/userPersonalCode'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/userRepresentedPartyCode'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/X-Road-UserId'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/X-Road-Represented-Party'
+      requestBody:
+        $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/requestBodies/DeleteMandate'
+      responses:
+        '200':
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/responses/EditMandateResult'
+        '400':
+          description: Invalid parameter
+        '403':
+          description: Forbidden. Request not authorized.
+        '404':
+          description: Resource to delete was not found.
+        '422':
+          description: Unprocessable request. Something went wrong.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
+  /person:
+    put:
+      tags:
+        - ph-rolebinding-store
+      summary: Update person details (firstName, surname, legalName, state) or store a new person. 
+      description: NB! It is not possible to change person type.
+      operationId: updatePerson
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/PersonWithState'
+      responses:
+        '200':
+          description: Operation completed successfully
+        '400':
+          description: Incorrect payload.
+  /person/{identifier}:
+    get:
+      tags:
+        - ph-rolebinding-store
+      summary: Get person (stored in Pääsuke) by identifier. 
+      operationId: getPerson
+      parameters: 
+        - name: identifier
+          in: path
+          description: Person identifier
+          required: true
+          example: EE60102030405
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Person with the identifier
+          content:
+            application/json:
+              schema:
+                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Person'
+        '404':
+          description: Person with that identifier does not exist in Pääsuke
+
+
+
+  /represented-parties/{representedPartyCode}/documents/{documentUuid}:
+    put:
+      tags:
+        - mutator-adapter-internal
+      summary: Process the MandateOperationsRequest(s) in the document
+      operationId: processMandateOperations
+      description: |
+        This goes over all the mandateOperations in the document. The document has to be in the state "READY" or the call will fail. It will immediately change document state to "PROCESSING" which means that after that it is not possible to call this method again
+      parameters: 
+        - name: representedPartyCode
+          in: path
+          description: <b>Identifier of the represented party (who is currently being represented in Eesti.ee).</b> Can be one of the follwing&colon; <p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p>
+          example: EE10391131
+          required: true
+          schema:
+            type: string
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Document UUID
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/userPersonalCode'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/userRepresentedPartyCode'
+      requestBody:
+        content:
+          application/json: {}
+      responses:
+        '200':
+          description: Document is already being processed (state = PROCESSING) or finished processing (state = COMPLETED).
+        '202':
+          description: Accepted for processing. There are enough signatures/confirmations.
+        '204':
+          description: There are not yet enough signatures.
+        '409':
+          description: Document is not yet in READY state (so state is DRAFT or WAITING).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
+        '500':
+          description: Internal error.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Problem'
+
+components:
+  requestBodies:
+    MandateToEdit:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MandateToEdit'
+      description: Edit mandate properties
+  
+    
+    # This is for patch request that takes triplets where there are list of mandates
+    AddMandatesTriplets:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/AddMandatesTriplet'
+      
+      
+    # This is for patch request and each triplet can have multiple mandates
+    AddMandatesTriplet:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AddMandatesTriplet'
+
+      description: Details of the mandate being added.<p><b>Identifier of the representee (volituse andja) and delegate (volitaja)</b> can be one of the follwing&colon;</p><p>a)  'EE' followed by 8-digit legal entity code from Estonian Business Registry (however in reality it is very rarely that the sub-delegate is a company, it is usually a natural person)</p> <p>b) 'EE' followed by 11-digit national identity number</p> <p>c) Two-letter country code followed by eIDAS identification (1...254 symbols) - Pääsuke uses the value that was returned by Tara when the person logged into eesti.ee portal.</p><p>The <b>validityPeriod</b> can be from today and infinite (no through date) or with specific end date.</p><p>The <b>authorizations</b> block informs why Pääsuke came to a conclusin that this user has the authorization to add this mandate. The userIdentifier always points to the acutal natural person who confirmed the action in the user interface.</p>
+      
+      
+      
+  responses:
+    MandateTripletsInternal:
+      description: MandateTriplets that match to the query parameters. 
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/MandateTripletInternal'
+  schemas:
+    AddMandatesTriplet:
+      type: object
+      required:
+        - representee
+        - mandates
+      description: 
+        Delegate is optional (in case company gets deleted then updating is needed, mandates array will be empty then. Representee can contain name that might need to be changed.).
+      properties:
+        representee:
+          $ref: '#/components/schemas/PersonInternal'
+        delegate:
+          $ref: '#/components/schemas/PersonInternal'
+        mandates:
+          type: array
+          items: 
+            $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateToAdd'
+        authorizations:
+          type: array
+          items: 
+            $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Authorization'
+    MandateTripletInternal:
+      type: object
+      required:
+        - representee
+        - delegate
+        - mandates
+      properties:
+        representee:
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Person'
+        delegate:
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Person'
+        mandates:
+          type: array
+          description: Mandates
+          items:
+            $ref: '#/components/schemas/MandateInternal'
+    MandateInternal:
+      type: object
+      description: |
+        NB! The definition here must include all fields that are defined in https://app.swaggerhub.com/domains/aasaru/paasuke-common-types/ -> /components/schemas/Mandate
+        The collection "links" contains links that are not yet checked against matching RoleDefinition and also not checked if the current user is allowed to use them. Namespace-adapter (rule engine) verifies the links and copies the links that the user is allowed to click into the "verifiedLinks" collection. Rolebinding-adapter that creates UUID-s for the links must use links from the "verifiedLinks" collections and only create UUIDs for them (and not look at "links" collection).
+      required:
+        - role
+      properties:
+        role:
+          type: string
+          format: string
+          example: 'STAT:Legal_person_data_viewer_package'
+          description: Role
+        validityPeriod:
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/ValidityPeriod'
+        links:
+          $ref: '#/components/schemas/MandateLinksInternal'
+        verifiedLinks:
+          $ref: '#/components/schemas/MandateLinksInternal'
+        subDelegatorIdentifier:
+          type: string
+          example: EE12345678
+          description: Person who created this mandate via sub-delegating. This is deprecated, use subDelegator instead.
+        subDelegator:
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Person'
+        subDelegable: 
+          type: boolean
+          description: Was this mandate given with the right for the delegate to sub-delegate it.
+        hidden:
+          type: boolean
+          example: false
+          description: False by default. This is internal property of Pääsuke and used to feed extra information to rule enginge.
+          
+    MandateLinksInternal:
+      allOf:     # Previously combined MandateLinks and added a property "update" that was later removed
+      - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/MandateLinks'
+            
+    MandateToEdit:
+      type: object
+      properties:
+        canSubDelegate:
+          type: boolean
+          description: Does the delegate of the mandate have a right to sub-delegate it
+        validityPeriod:
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/ValidityPeriod'
+        authorizations:
+          type: array
+          items: 
+            $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Authorization'
+            
+            
+    PersonInternal:
+      allOf:     # Combines the BasicErrorModel and the inline model
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/Person'
+        - type: object
+          properties:
+            state:
+              type: string
