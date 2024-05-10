@@ -1,0 +1,253 @@
+openapi: 3.0.0
+info:
+  version: '2.9'
+  title: ph-mutator-ui-api and namespace-store-ui-api
+  description: |
+    Served by mutator-adapter and document-adapter.
+
+
+  
+    Pääsuke public APIs:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/x-road-services-consumed-by-paasuke/">X-road services consumed by Pääsuke</a></li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/paasuke-x-road-services-to-query-mandates/">X-road services to query mandates that are stored in Pääsuke (Oraakliliides)</a></li>
+    </ul>
+    
+    Pääsuke UI APIs:
+    <ul>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-ui-api/">rolebinding-adapter-ui-api and document-adapter-ui-api</li>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-mutator-ui-api/">mutator-adapter-ui-api, namespace-store-ui-api</li>
+        <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-name-ui-api"/>name-adapter-ui-api</a></li>
+    </ul>
+    
+    Pääsuke internal APIs:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-adapter-internal-api"/>document-adapter-internal-api, document-helper-internal, name-adapter-internal, sync-adapter-internal</a></li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-namespace-store/">namespace-store-internal-api</li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-rolebinding-store/">rolebinding-store and mutator-adapter-internal</li>
+      <li><a href="https://app.swaggerhub.com/apis/aasaru/ph-document-store-internal-api/">document-store-internal-api</li>
+    </ul>
+    
+    Types:
+    <ul>
+      <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/">Pääsuke common UI types</a></li>
+      <li><a href="https://app.swaggerhub.com/domains/aasaru/paasuke-common-types/">Pääsuke common types used in internal and xRoad APIs</a></li>
+    </ul>
+
+    Changelog:
+    <ul>
+      <li>2024-04-19 - createUiMandateOperationsRequest does not trigger the processing</li>
+    </ul>
+
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/aasaru/ph-mutator-ui-api/2.9
+tags:
+  - name: mutator-adapter-ui
+
+paths:
+  /documents/{documentUuid}/mandate-operations-requests:
+    post:
+      operationId: createUiMandateOperationsRequest
+      summary: Create a request to modify mandates. This does not yet trigger anything.
+      tags:
+        - mutator-adapter-ui
+      description: |
+        Patch request can contain many actions but all the actions must be from one of the following 3 groups:
+        
+        1) You can ADD and DELETE mandates where representedParty is the representee, but all those actions must be about the same delegate.
+        
+        2) You can DELETE mandates where representedParty is the delegate - withdraw (tagasi võtma) or waive (loobuma).
+        
+        3) You can add sub-delegates for mandates where representedParty is the delegate. Set the details of the sub-delegate to be added to the "delegate" field in the body of the request.
+        
+        All the actions must belong to the same group or the back-end will reject the whole payload.
+      parameters: 
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.3#/components/parameters/OverrideRepresentedPartyCode'
+        - name: documentUuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Document UUID
+      requestBody:
+        $ref: '#/components/requestBodies/UiMandateOperationsRequest'
+      responses:
+        '201':
+          description: Request with returned UUID created
+          content:
+            application/json:
+              schema:
+                $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/schemas/AcceptMandateOperationsResult'
+        '400':
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.5#/components/responses/UiValidationErrors'
+        '403':
+          description: Forbidden. For example the user does not have active legal capacity for the action.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.2#/components/schemas/UiProblem'       
+        '422':
+          description: Request contains invalid data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.1#/components/schemas/UiProblem'   
+        '500':
+          description: Internal error. The whole payload cannot be processed. The error should be displayed on top of the page.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.1#/components/schemas/UiProblem'
+
+                  
+  /namespaces/roles/{lang}:
+    get:
+      tags:
+        - namespace-store-ui-api
+      summary: List all roles that can exist in Pääsuke. namespace-store adds /ui/ prefix.
+      operationId: getRolesTranslation
+      parameters:
+        - in: path
+          name: lang
+          description: UI language
+          example: en
+          required: true
+          schema:
+            type: string
+            enum: [et, en, ru]
+        - in: query
+          name: namespace
+          description: Filter by namespace
+          example: STAT_ESTAT
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: namespaces and their roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UiNamespaceTranslation'           
+
+components:
+  requestBodies:
+    UiMandateOperationsRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              delegateIdentifier:
+                type: string
+                description: identifier of the delegate
+                example: EE51403020001
+                maxLength: 258
+              legalCapacityVerification: 
+                type: string
+                enum: 
+                  - NOT_NEEDED
+                  - USER_AGREED
+                description: Did user agree with legal capacity verification or was the verification not needed.
+              operations:
+                $ref: '#/components/schemas/UiMandateOperations'
+    
+    UiModifyMandatesRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              representee:
+                type: string
+                description: identifier of the representee
+                example: EE12345678
+                maxLength: 258
+              delegate:
+                type: string
+                description: identifier of the delegate
+                example: EE51403020001
+                maxLength: 258
+              # previously this property was named actions and the type was named UiUuidActions
+              operations:
+                $ref: '#/components/schemas/UiMandateOperations'
+  schemas:
+    UiNamespaceTranslation:
+      type: object
+      properties:
+        namespace:
+          type: string
+          example: STAT
+        title:
+          type: string
+          example: Statistikaamet
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/UiRoleTranslation'
+  
+
+    UiRoleTranslation:
+      type: object
+      properties:
+        role:
+          type: string
+          example: STAT_ESTAT:Respondent
+        title:
+          type: string
+          format: string
+          example: Andmeesitaja
+        description:
+          type: string
+          format: string
+          example: Andmeesitaja, kellel on õigus esitada kõigi majandusüksuste küsimustike andmeid
+        listedFor: 
+          type: array
+          description: In page "Which roles can I assign?" the role is listed for 
+          items:
+            type: string
+            enum: [LEGAL_PERSON, NATURAL_PERSON]
+          example: ['LEGAL_PERSON','NATURAL_PERSON']
+  
+  
+    UiMandateOperations:
+      type: array
+      items:
+        $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.1#/components/schemas/UiMandateOperation'
+      example: [
+        {
+          "action": "ADD",
+          "uiUuid": "2290f1ee-6c54-4b01-90e6-d701748f0851",
+          "role": "EMTA:HAMPI",
+          "canSubDelegate": true,
+          "validityPeriod": {
+            "from": "2028-01-01",
+            "through": null
+          }
+        },
+        {
+          "action": "DELETE",
+          "actionUuid": "d290f1ee-6c54-4b01-90e6-d701748f0851"
+        },
+        {
+          "action": "ADD_SUB_DELEGATE",
+          "actionUuid": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+          "validityPeriod": {
+            "from": "2028-01-01",
+            "through": null
+          }
+        }
+      ]
