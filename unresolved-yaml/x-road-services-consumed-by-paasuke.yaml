@@ -1,17 +1,19 @@
 openapi: 3.0.0
 servers:
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/aasaru/x-road-services-consumed-by-paasuke/0.9.5
+    url: https://virtserver.swaggerhub.com/aasaru/x-road-services-consumed-by-paasuke/1.0.1
 
 info:
   title: X-road services consumed by Pääsuke
   description: |
-    Pääsuke public APIs:
+    <p>X-road service definitions that are standardized by Pääsuke but offered by other parties (like Tax and Customs Board) and consumed by Pääsuke.</p><p>To download the API descriptions from the right menu choose either Export -&gt; Download API -&gt; YAML Resolved (or JSON Resolved) or you can export a server stub in your favourite programming language.</p>More info can be found at <a href="https://github.com/e-gov/PH/">github.com/e-gov/PH</a>.
+    <h2>Changelog since 1.0.0</h2>
+    <h3>1.0.1</h3>
     <ul>
-      <li><a href="https://app.swaggerhub.com/apis/aasaru/x-road-services-consumed-by-paasuke/">X-road services consumed by Pääsuke</a></li>
-      <li><a href="https://app.swaggerhub.com/apis/aasaru/paasuke-x-road-services-to-query-mandates/">X-road services to query mandates that are stored in Pääsuke (Oraakliliides)</a></li>
+      <li>Added mandateTriplet.mandate.subDelegator</li>
+      <li>Deprecated mandateTriplet.mandate.subDelegatorIdentifier in favour of mandateTriplet.mandate.subDelegator</li>
     </ul>
-  version: 0.9.5
+  version: 1.0.1
   license:
     name: Licensed under Apache 2.0 license
     url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
@@ -20,7 +22,7 @@ paths:
   /delegates/{delegate}/representees/mandates:
     get:
       summary: List persons the delegate can represent. Mandates (roles) are included in the response.
-      operationId: getDelegateRepresenteesWithMandates
+      operationId: getMandatesByDelegate
       description: |
         
       parameters:
@@ -31,9 +33,20 @@ paths:
           required: true
           schema:
             type: string
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/subDelegatedByForDelegateRepresenteesQuery'
         - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/X-Road-UserId'
         - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/X-Road-Represented-Party'
         - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/X-Road-Id'
+        - name: ns
+          in: query
+          description: Systems that only serve mandates from a single namespace can ignore this parameter.
+          required: false
+          example: ANNUAL_REPORTS
+          schema:
+            type: array
+            items:
+             type: string
+             example: 'ANNUAL_REPORTS'
       responses:
         '200':
           $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/responses/MandateTriplets'
@@ -45,7 +58,7 @@ paths:
   /representees/{representee}/delegates/mandates:
     get:
       summary: List delegates who have any mandates that are currently valid or become valid in the future.
-      operationId: getRepresenteeDelegatesWithMandates
+      operationId: getMandatesByRepresentee
       description: |
 
         
@@ -57,20 +70,6 @@ paths:
           required: true
           schema:
             type: string
-        - name: subDelegatedBy
-          in: query
-          description: <p><b>To add a filter to results so that only mandates that were sub-delegated by this person (edasivolitaja) would be returned.</b></p>
-          
-            <p>This is to cover the following use case. Let's say LittleCompany has given BookkeepingCompany some role together with the right for BookkeepingCompany to further sub-delegate the role to its employees.</p> 
-            
-            <p>BookkeepingCompany can use this query to get the list of its employees who have received this role from BookkeepingCompany through sub-delegation.</p>
-            
-            <p>To display this list Pääsuke makes a query  where representee={LittleCompanyIdentifier} and subDelegatedBy={BookkeepingCompanyIdentifier}.</p>
-          
-          required: false
-          example: EE10391132
-          schema:
-            type: string
         - name: delegate
           in: query
           description: Only return mandates with this delegate (volitatu). This is used for TÖR queries. 
@@ -78,6 +77,17 @@ paths:
           example: EE10391132
           schema:
             type: string
+        - name: ns
+          in: query
+          description: Only return mandates with specified namespace. Systems that only serve mandates from a single namespace can ignore this parameter.
+          required: false
+          example: ANNUAL_REPORTS
+          schema:
+            type: array
+            items:
+             type: string
+             example: 'BR_REPRIGHT'
+        - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/subDelegatedByForRepresenteeDelegatesQuery'
         - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/X-Road-UserId'
         - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/X-Road-Represented-Party'
         - $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/parameters/X-Road-Id'
@@ -161,14 +171,14 @@ paths:
         - name: representeeId
           in: path
           description: Implementator can use any form of representee identifier (like internal person id). Pääsuke takes this value from 'addSubDelegate' link.
-          example: EE10391131
+          example: 1236
           required: true
           schema:
             type: string
         - name: delegateId
           in: path
           description: Implementator can use any form of delegate identifier (like internal person id). Pääsuke takes this value from 'addSubDelegate' link.
-          example: EE38302250123
+          example: 4567
           required: true
           schema:
             type: string
@@ -217,12 +227,12 @@ paths:
       summary: Edit mandate (by ending the validity of it)
       operationId: editMandate
       description: |
-        To edit a mandate, currently the only supported action is DELETE which means ending the validity of the mandate. The values of representeeId, delegateId and mandateId are taken from the output of the Mandate, from the delete link.
+        To edit a mandate, currently the only supported actions are DELETE_WITHDRAW and DELETE_WAIVE which means ending the validity of the mandate. The values of representeeId, delegateId and mandateId are taken from the output of the Mandate, from the delete link.
       parameters:
         - name: representeeId
           in: path
           description: Implementator can use any form of representee identifier (like internal person id). Pääsuke takes this value from 'delete' link.
-          example: EE12345678-123
+          example: 100548
           required: true
           schema:
             type: string
@@ -248,9 +258,7 @@ paths:
       
       responses:
         '200':
-          description: Deleted sucessfully
-        '202':
-          description: Request accepted but not yet deleted
+          $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/responses/EditMandateResult'
         '400':
           description: Invalid parameter
         '403':
