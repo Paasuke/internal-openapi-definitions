@@ -1,7 +1,7 @@
 openapi: 3.0.0
 servers:
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/aasaru/ph-document-store-internal-api/0.9.3
+    url: https://virtserver.swaggerhub.com/aasaru/ph-document-store-internal-api/0.9.4
 
 info:
   version: 0.9.4
@@ -375,6 +375,8 @@ paths:
           # This used to be: $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-ui-types/1.3#/components/responses/UiActionResults'
           $ref: 'https://api.swaggerhub.com/domains/aasaru/paasuke-common-types/0.12#/components/responses/ProcessingResults'
         '202':
+          description: The document is still being processed. Please try in a short while.
+        '204':
           description: The document is still being processed. Please try in a short while.
         '403':
           description: Forbidden. Request not authorized.
