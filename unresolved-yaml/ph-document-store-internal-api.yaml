@@ -378,7 +378,7 @@ paths:
         '202':
           description: The document is still being processed. Please try in a short while.
         '204':
-          description: The document is still being processed. Please try in a short while.
+          description: If document exists but document.status=WAITING then it means that there are no results yet and more confirmations/signatures are needed.
         '403':
           description: Forbidden. Request not authorized.
         '404':
